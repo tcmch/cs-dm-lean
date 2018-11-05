@@ -459,42 +459,100 @@ the negation of the second:
 -- PART II
 
 /-
-Now we introduce addition basic 
-set theory concepts: subsets,
-power sets, product sets, and
-a concept of insertion into a 
-set.
+Now we introduce additional basic 
+set theory concepts: these include
+notionss of subsets, power sets, 
+product sets, and an operator that
+simulates insertion  of an element
+into a set.
+
+In all cases, we see that these
+set operations can be understood
+as operations on the predicates
+that define sets. The connection
+of set theory to logic becomes
+clear and explicit.
 -/
 
 -- Subset
 
 /-
-Subset, denoted ⊂, is a binary 
-relation on sets, denoted X ⊂ Y, 
-where X and Y are sets, that is 
-true iff every element of X is 
-also in (an element of) Y. 
+Subset, denoted ⊆, is a binary 
+relation on sets, denoted X ⊆ Y, 
+where X and Y are sets. Viewed 
+as a predicate on such sets, it
+is satisfied (made true by X and
+Y) iff every member of X is also 
+a member of Y. Logically, X is a
+subset of Y if the property of
+being in X implies the property
+of being in Y.
 
-So, { 1, 2 } ⊂ { 1, 2, 3 } but
-¬ { 1, 2 } ⊂ { 1, 3, 4}. In the
+So, { 1, 2 } ⊆ { 1, 2, 3 } but
+¬ { 1, 2 } ⊆ { 1, 3, 4}. In the
 first case, every element of the
 set, { 1, 2 }, is also in the set
 { 1, 2, 3 }, so { 1, 2 } is a 
 subset of { 1, 2, 3 }, but that
 is not the case for { 1, 2 } and
 { 1, 3, 4 }.
+-/
 
+
+/-
 Remember that in Lean, "set" is 
 not a type but a type constructor,
-a.k.a., a polymorphic type. Rather,
-for any type, T, set T is a type,
+a.k.a., a polymorphic type. That is
+for any type, T, (set T) is a type,
 namely the type of sets containing
-elements of type T. Even the empty
-set always has an element type, so,
-for example, the empty set of ℕ is
+elements of type T. So, for example,
+(set nat) is a type, the type of a
+set whose members are of type nat. 
+Even an empty set always has an 
+element type. For example, the 
+empty set of ℕ, ∅ : set nat, is 
 not the same as the empty set of 
-strings.
+strings, ∅ : set string.
 -/
+
+/-
+Hover over "set" in the following
+code to see that set is not a type
+but a type constructor: essentially
+a function that takes a type (of the
+elements) and returns a type (set of
+elements of that type). You can also
+see that (set nat) and (set string)
+are now types, and different types 
+at that.
+-/
+
+#check set nat
+#check set string
+
+/-
+In particular, a type, set T, is
+defined to by a property, i.e., a
+predicate with one argument, of
+type T → Prop. A set is defined by
+a property: the property of being 
+a member of the set! So, in Lean, 
+if z is a set of Ts, and e is an 
+object of type T, then (z e) is 
+a proposition: one that's true 
+(for which there is a proof) iff 
+e has the property of being in z.
+-/
+
+/-
+Inspect the following lines to 
+see that the types of set nat and
+set string are "properties" of nat
+and of string, respectively.
+-/
+
+#reduce set nat
+#reduce set string
 
 /-
 EXERCISE: List all of the subsets
@@ -513,18 +571,65 @@ set, containing 0 elements?
 
 
 /-
-remember:
+For the next set of examples please
+recall that we defined the set nat
+values, x, y, and z, above, as:
+
 * def x : set nat := { 1 }
 * def y : set nat := { 1, 2, 3 }
 * def z : set nat := { 2, 3, 4 }
 -/
 
+/-
+We can now see that the subset relation
+on sets has a precise logical meaning. 
+What x ⊆ y means is that for any value,
+e, e ∈ x → e ∈ y.
+
+Note that what is displayed when you
+hover over the reduce line includes 
+script curly brace characters. These
+indicate a slight variant on implicit
+arguments that we needn't get in any
+detail right now. Just think of them
+as saying to use implicit arguments.
+
+-/
 #check x ⊆ y
 #reduce x ⊆ y
 
+/-
+Okay, so let assert and prove a
+proposition involving the subset
+relation. We'll show that x ⊆ y
+by proving that if a ∈ x (that 
+is, if (x a)) then a ∈ y.
+-/
+
 example : x ⊆ y := 
 begin
+/-
+It's sometimes helpful to change 
+from set notation to the equivalent
+propositional notation. The change
+tactic will do this for you, as 
+long as what you're changing the
+goal is is "definitionally equal"
+to the current goal. You cand find
+out what the exact proposition is
+using reduce, as we did above.
+-/
 change ∀ ⦃a : ℕ⦄, a = 1 ∨ false → a = 3 ∨ a = 2 ∨ a = 1 ∨ false,
+/-
+The rest is just an everyday proof.
+Note that we can quickly zero in on
+the disjunct we need using a series
+of left and right tactics. (You do
+need to remember that ∨ is right
+associative, so left gives you the
+left disjunct and right gives you
+everything else.)
+-/
 assume a,
 intro h,
 cases h,
@@ -858,3 +963,16 @@ def myInsert { T : Type } (a : T) (s : set T) : set T :=
 #reduce insert 5 { 1, 2, 3, 4 }
 
 end sets
+
+example : ∀ P : Prop, P → (P → P) :=
+begin
+assume P pfP f, assumption,
+end
+
+lemma fift: false → false := λ f, f
+
+example : ∃ P : Prop, ¬ ((P → P) → P) :=
+begin
+apply exists.intro false,
+assume h, simp at h, assumption,
+end
