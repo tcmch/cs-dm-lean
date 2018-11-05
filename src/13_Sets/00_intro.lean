@@ -651,19 +651,31 @@ variable x : T
 variables A B C : set T
 
 /-
-For any type, T, a set T is a T → Prop:
-a property of values of type T, namely
-the property of being in the given set.
+For any type, T, the type, (set T), is 
+the type,(T → Prop). A specific set is 
+a specific property of this type: the 
+property of being in the given set.
 -/
 #reduce set T
 
+
+-- SET MEMBERSHIP
+
 /-
-Membership, written ∈, where x ∈ A is
-read as "x is in A" or "x is a member of
-A", is the proposition, (A x), i.e., that
-x has the property of being in A.
+The proposition that a value, e, is in 
+a set A, is written as e ∈ A, and can be
+read as "e is in A" or "e is a member of
+A". e ∈ A is literally the proposition, 
+(A x): the application of the predicate
+that defines the set to the value, e, 
+yielding the proposition that e, in
+particular, is in A. The following line
+of code makes clear that x ∈ A is really
+just the proposition, A x.
 -/
 #reduce x ∈ A
+
+-- INTERSECTION
 
 /-
 The intersection of A and B, written 
@@ -673,6 +685,8 @@ A and being in set B.
 #reduce x ∈ A ∩ B
 
 
+-- UNION
+
 /-
 The union of sets, A and B, written 
 A ∪ B, is the property of being in set 
@@ -681,12 +695,17 @@ A or being in set B.
 #reduce x ∈ A ∪ B
 
 
+-- DIFFERENCE
+
 /-
 The difference of sets, A and B, written 
 A \ B, is the property of being in set 
 A and not being in set B.
 -/
 #reduce x ∈ A \ B
+
+
+-- COMPLEMENT
 
 /-
 The complement a set, A, written in Lean
@@ -696,9 +715,20 @@ the set, A.
 #reduce x ∈ -A
 
 
-#reduce A ⊆ B
+-- EQUALITY OF SETS
 
+/-
+The principle of extensionality for
+sets stipulates that if one can show
+that e ∈ A ↔ e ∈ B then A = B. 
+-/
 
+/-When faced with a goal of proving 
+that two sets, A and B are equal,
+i.e., that A = B, one applies this 
+principle to reduce the goal to that 
+of showing that e ∈ A ↔ e ∈ B.
+-/
 #check ext 
 
 -- set equality
@@ -708,9 +738,211 @@ apply ext,
 intro x,
 apply iff.intro,
 intro,
--- etc.
+/-
+We can proceed no further here, as
+we have nothing to use to prove that
+A actually does equal B in this case.
+A and B are just arbitary sets, so not
+equal, in general. What the example is
+meant to show is how to use ext and 
+how to proceed. As for this proof, we
+will just abandon it as not possible
+to prove.
+-/
 end
 
+
+-- Powerset
+
+/-
+The powerset of a set, A, is the set of all
+of the subsets of A.
+-/
+
+#check powerset A
+#check 𝒫 A
+#reduce 𝒫 A
+
+/-
+Note about implicit arguments. In the preceding
+definition we see {{ }} brackets, rendered using
+the characters, ⦃ ⦄. This states that the argument
+is to be inferred from context (is implicit) but
+is expected only when it appears before another
+implicit argument. This notation tells Lean not
+to "eagerly" consume the argument, as soon as it
+can, but to wait to consume it until it appears,
+implicitly, before another implicit argument in a
+list of arguments. This is a notational detail 
+that it's not worth worry about at the moment. 
+-/
+
+
+-- Tuples
+/-
+If S and T are types, then the product type
+of S and T, written out as (prod S T) and in
+shorthand as S × T, has as its values all of
+2-tuples, or ordered pairs, (s, t), where 
+s : S, and t : T. 
+-/
+
+/-
+In the following code, we see that ℕ × ℕ is
+a type, and the 2-tuple, or ordered pair, 
+(1, 2), is a value of this type. 
+-/
+
+#check ℕ × ℕ 
+#check (1, 2)
+
+/-
+We can form product types from any two types.
+Note the type of this 2-tuple.
+-/
+
+#check ("Hello Lean", 1)
+
+/-
+This ordered pair notation in Lean in shorthand 
+for the appliation of the constructor, prod.mk,
+two two arguments. The constructor takes the 
+type arguments implicitly.
+-/
+#check prod.mk 1 2 -- long way to write (1, 2)
+example : prod.mk 1 2 = (1, 2) := rfl
+
+/-
+We can form 3- and larger tuples using nested
+2-tuples. Note that × is right associative, as
+you can see by studying the type of this term.
+-/
+
+#check ("Hello Lean", (10, 1))
+
+
+-- PRODUCT SET
+
+/-
+The Cartesian product set of two sets, A 
+and B, denoted as A × B in everyday math,
+is the set of all ordered pairs, (a, b) 
+(values of type prod A B), where a ∈ A 
+and b ∈ B. In Lean, the set product of 
+sets, A and B, is denoted as set.prod A B.
+There is no nice infix operator notation
+for set products at this time.
+
+Note carefully: there is a distinction
+here between product types and product sets.
+Product types are types, while product sets
+are sets. And sets are not types in Lean.
+Rather they're specified as properties.
+
+This is potentially confusing. It is made
+more confusing by the fact that Lean has 
+a way to convert a set into a special type
+called a subset type: the type of elements
+in the set, along with proofs of membership.
+And if you apply prod to two sets, you'll 
+get a subset type!
+-/
+
+#check set.prod y z     -- product set type
+#reduce set.prod y z    -- product set property
+#check prod y z         -- oops, a subset type
+#check y × z            -- oops, same thing
+#reduce prod y z        -- oops, not what we want
+
+
+/-
+A set product is just a set, which is to
+say it's defined by a predicate, s. Such a
+predicate is true for exactly the members
+of the set. That is, (s x) is a proposition
+that is true iff x ∈ s. The predicate that
+defines a product set is a predicate on
+ordered pairs. It's basically defined like
+this:
+-/
+
+def mysetprod (S T : Type) (s : set S) (t : set T) : set (S × T) :=
+{p : prod S T | p.1 ∈ s ∧ p.2 ∈ t}
+
+/-
+What this says, then, is that the product set
+of s (a set of S-type values) and t (a set of
+T-type values) is the set of pairs, p, each of
+type (prod S T), and each thus an ordered pair,
+p = (p.1, p.2), where p.1 ∈ s and p.2 ∈ t.
+-/
+
+
+example : (1, 2) ∈ set.prod y z := 
+begin
+change (λ (p : ℕ × ℕ),
+  (p.fst = 3 ∨ p.fst = 2 ∨ p.fst = 1 ∨ false) ∧ (p.snd = 4 ∨ p.snd = 3 ∨ p.snd = 2 ∨ false)) (1,2),
+  split,
+  right,right,left,apply rfl,
+  right,right,left,apply rfl,
+end
+
+/-
+Note: { x // A x } is basically the same as 
+{ x | A x }. These are technically called  
+subset types, the values of which are basically
+⟨ value, proof ⟩ pairs: a value along with a 
+proof that it satisfies the set predicate. You
+don't need to worry about this at this time.
+-/
+
+
+-- INSERTION
+
+/-
+We can define an operation that we can think
+of as "inserting" an element into a set: as a
+function that takes an element and a set and
+returns the set containing that element along
+with the elements of the original set. Unlike
+in Python or Java, there's no change to a data 
+structure in this case. In pure functional
+languages, such as Lean, there is no concept
+of a memory or of "mutable" objects. Rather,
+everything is defined by functions, here one
+that takes a set and a value and constructs 
+a new set value just like the old one but with
+the new element included as well. -/
+
+def myInsert 
+{ T : Type } (a : T) (s : set T) : set T :=
+    {b | b = a ∨ b ∈ s}
+
+/-
+The predicate for the set resulting from
+"inserting 5 into { 1, 2, 3, 5 }" admits
+that 5 is also a member of the result set. 
+-/    
+#reduce myInsert 5 { 1, 2, 3, 4 }
+
+-- The Lean set library provides "insert"
+#reduce insert 5 { 1, 2, 3, 4 }
+
+
+
+-- SOME EXAMPLE FACTS AND PROOFS
+
+/-
+Several of these examples are adapted
+from Jeremy Avigad's book, Logic and 
+Proof. Prof. Avigad (CMU) is one of the
+main contributors to the development of
+Lean, and especially to the development
+of its mathematical libraries, including
+the one you're now using for sets.
+-/
+
+-- SUBSET
 
 /-
 A is a subset of A ∪ B
@@ -782,7 +1014,6 @@ show x ∈ A ∨ x ∈ B,
 by assumption,
 end
 
--- from Avigad
 /-
 A minus B is a subset of A
 -/
@@ -794,7 +1025,6 @@ cases mem,
 from mem_left,
 end
 
--- from Avigad
 /-
 A minus B is contained in the complement of B
 -/
@@ -807,6 +1037,11 @@ change x ∉ B,
 exact mem.right,
 end
 
+
+/-
+A \ B is equal to the intersection
+of A with the complement of B.
+-/
 example : A \ B = A ∩ -B :=
 begin
 apply ext,
@@ -818,161 +1053,4 @@ intro h,
 exact h,
 end
 
-
--- Powerset
-
-/-
-The powerset of a set, A, is the set of all
-of the subsets of A.
--/
-
-#check powerset A
-#check 𝒫 A
-#reduce 𝒫 A
-
-/-
-Note about implicit arguments. In the preceding
-definition we see {{ }} brackets, rendered using
-the characters, ⦃ ⦄. This states that the argument
-is to be inferred from context (is implicit) but
-is expected only when it appears before another
-implicit argument. This notation tells Lean not
-to "eagerly" consume the argument, as soon as it
-can, but to wait to consume it until it appears,
-implicitly, before another implicit argument in a
-list of arguments. This is a notational detail 
-that it's not worth worry about at the moment. 
--/
-
-
--- Tuples
-/-
-If S and T are types, then S × T, called the 
-product type of S and T, is the type of ordered
-pairs, (s, t), where s : S and t : T. In Lean 
-and in ordinary mathematics, elements of such a
-type are represented as ordered pairs of values
-enclosed in parenthesis.
--/
-
-#check ℕ × ℕ 
-#check (1, 2)
-/-
-This ordered pair notation in Lean in shorthand 
-for the appliation of the constructor, prod.mk,
-two two arguments. The constructor takes the 
-type arguments implicitly.
--/
-#check prod.mk 1 2
-
--- Product set
-
-/-
-The Cartesian product set of two sets, A 
-and B, denoted as A × B in everyday math,
-is the set of all ordered pairs, (a, b) 
-(values of type prod A B), where a ∈ A 
-and b ∈ B. In Lean, the set product of 
-sets, A and B, is denoted as set.prod A B.
-There is no nice infix operator notation
-for set products at this time.
-
-Note carefully: there is a distinction
-here between product types and product sets.
-Product types are types, while product sets
-are sets. And sets are not types in Lean.
-Rather they're specified as properties.
-
-This is potentially confusing. It is made
-more confusing by the fact that Lean has 
-a way to convert a set into a special type
-called a subset type: the type of elements
-in the set, along with proofs of membership.
-And if you apply prod to two sets, you'll 
-get a subset type!
--/
-
-#check set.prod y z     -- product set type
-#reduce set.prod y z    -- product set property
-#check prod y z         -- oops, a subset type
-#check y × z            -- oops, same thing
-#reduce prod y z        -- oops, not what we want
-
-
-/-
-A set product is just a set, which is to
-say it's defined by a predicate, s. Such a
-predicate is true for exactly the members
-of the set. That is, (s x) is a proposition
-that is true iff x ∈ s. The predicate that
-defines a product set is a predicate on
-ordered pairs. It's basically defined like
-this:
--/
-
-def mysetprod (S T : Type) (s : set S) (t : set T) : set (S × T) :=
-{p : prod S T | p.1 ∈ s ∧ p.2 ∈ t}
-
-/-
-What this says, then, is that the product set
-of s (a set of S-type values) and t (a set of
-T-type values) is the set of pairs, p, each of
-type (prod S T), and each thus an ordered pair,
-p = (p.1, p.2), where p.1 ∈ s and p.2 ∈ t.
--/
-
-
-example : (1, 2) ∈ set.prod y z := 
-begin
-change (λ (p : ℕ × ℕ),
-  (p.fst = 3 ∨ p.fst = 2 ∨ p.fst = 1 ∨ false) ∧ (p.snd = 4 ∨ p.snd = 3 ∨ p.snd = 2 ∨ false)) (1,2),
-  split,
-  right,right,left,apply rfl,
-  right,right,left,apply rfl,
-end
-
-/-
-Note: { x // A x} is the same as { x | A x}, and
-both are shorthands for "subtype (λ x : α, p x)." 
-The idea is that the type, {x : α // p x}, denotes 
-the collection of elements of α with property p.
--/
-example : { x // A x} = { x | A x} := rfl
-
-
-
-
-
-
-
--- Insertion
-
-/-
-We can provide an operation that we can think
-of as "inserting" an element into a set, as a
-function that takes an element and a set and
-returns the set containing that element along
-with the elements of the original set. 
--/
-
-def myInsert { T : Type } (a : T) (s : set T) : set T :=
-    {b | b = a ∨ b ∈ s}
-#reduce myInsert 5 { 1, 2, 3, 4 }
-
--- The Lean set library provides "insert"
-#reduce insert 5 { 1, 2, 3, 4 }
-
 end sets
-
-example : ∀ P : Prop, P → (P → P) :=
-begin
-assume P pfP f, assumption,
-end
-
-lemma fift: false → false := λ f, f
-
-example : ∃ P : Prop, ¬ ((P → P) → P) :=
-begin
-apply exists.intro false,
-assume h, simp at h, assumption,
-end
