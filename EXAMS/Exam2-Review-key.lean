@@ -552,3 +552,27 @@ intros n pf,
 apply exists.intro n,
 exact or.inl pf.left,
 end
+
+
+/-
+-/
+
+example : ∃ n : ℕ, n = 10 :=
+begin
+exact exists.intro 10 rfl,
+end
+
+example : ∃ n : ℕ, n = 10 :=
+begin
+exact ⟨ 10, rfl ⟩ 
+end
+
+example : (∃ n : ℕ, n = 10) → (∃ n : ℕ, n + 2 = 12) :=
+begin
+assume e,
+apply exists.elim e,
+assume a,
+assume a10,
+apply exists.intro a,
+rw a10,
+end
