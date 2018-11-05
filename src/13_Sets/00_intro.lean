@@ -1,4 +1,6 @@
-import tactic.norm_num
+import data.set
+open set
+
 /-
 In Lean, set is a type constructor. It takes
 a type, T, as an argument and returns, as a 
@@ -76,10 +78,15 @@ that it represents.
 /-
 We can also represent the empty 
 set using set builder notation.
+Set builder notation is also called
+set comprehension notation.
 -/
 
 def e'' : set nat := { n | false }
 
+def ev(n : ℕ):Prop := ∃ m, m + m = n 
+
+def v : set nat := { n | ev n } 
 /-
 We read the right hand side as
 "the set of values, n, for which
@@ -209,6 +216,11 @@ with the name, y', using set builder
 notation.
 -/
 
+def y' : set nat := { n | 
+    n = 1 ∨ n = 2 ∨ n = 3 }
+
+#reduce y 
+
 /-
 With these basics in hand, we can 
 define, understand, and work with
@@ -294,8 +306,8 @@ the goal is just the disjunction,
 (3 = 3 ∨ 3 = 2 ∨ 3 = 1 ∨ false) ∨ 
 3 = 4 ∨ 3 = 3 ∨ 3 = 2 ∨ false.
 -/
-apply or.inl,
-apply or.inl,
+left,
+left,
 trivial,
 end
 
@@ -328,6 +340,7 @@ def w := y ∩ z
 #reduce w
 
 example : 2 ∈ y ∩ z :=
+-- (a = 3 ∨ a = 2 ∨ a = 1 ∨ false) ∧ (a = 4 ∨ a = 3 ∨ a = 2 ∨ false)
 begin
 apply and.intro,
 right,
@@ -419,3 +432,429 @@ contradiction,
 have f : false := pf,
 contradiction,
 end
+
+-- SUMMARY SO FAR
+
+/-
+A set can be characterized by
+a predicate: one that is true
+for each member of the set and
+false otherwise.
+
+The union of two sets is given
+by the disjunction (or) of the 
+predicates:
+(a ∈ y ∪ z) = (a ∈ y) ∨ (a ∈ z)
+
+The conjunction is defined by 
+their conjunction:
+(x ∈ y ∩ z) = (x ∈ y ∧ a ∈ z)
+
+Their difference is defined by 
+the conjunction of the first and
+the negation of the second:
+(a ∈ y \ z) = ( a ∈ y) ∧ (¬ a ∈ z)
+-/
+
+-- PART II
+
+/-
+Now we introduce addition basic 
+set theory concepts: subsets,
+power sets, product sets, and
+a concept of insertion into a 
+set.
+-/
+
+-- Subset
+
+/-
+Subset, denoted ⊂, is a binary 
+relation on sets, denoted X ⊂ Y, 
+where X and Y are sets, that is 
+true iff every element of X is 
+also in (an element of) Y. 
+
+So, { 1, 2 } ⊂ { 1, 2, 3 } but
+¬ { 1, 2 } ⊂ { 1, 3, 4}. In the
+first case, every element of the
+set, { 1, 2 }, is also in the set
+{ 1, 2, 3 }, so { 1, 2 } is a 
+subset of { 1, 2, 3 }, but that
+is not the case for { 1, 2 } and
+{ 1, 3, 4 }.
+
+Remember that in Lean, "set" is 
+not a type but a type constructor,
+a.k.a., a polymorphic type. Rather,
+for any type, T, set T is a type,
+namely the type of sets containing
+elements of type T. Even the empty
+set always has an element type, so,
+for example, the empty set of ℕ is
+not the same as the empty set of 
+strings.
+-/
+
+/-
+EXERCISE: List all of the subsets
+of each of the following sets of ℕ. 
+
+* ∅ 
+* { 1 }
+* { 1, 2 }
+* { 1, 2, 3 }
+
+EXERCISE: How many subsets are there
+f a set containing n elements. Does 
+your formula work even for the empty
+set, containing 0 elements?
+-/
+
+
+/-
+remember:
+* def x : set nat := { 1 }
+* def y : set nat := { 1, 2, 3 }
+* def z : set nat := { 2, 3, 4 }
+-/
+
+#check x ⊆ y
+#reduce x ⊆ y
+
+example : x ⊆ y := 
+begin
+change ∀ ⦃a : ℕ⦄, a = 1 ∨ false → a = 3 ∨ a = 2 ∨ a = 1 ∨ false,
+assume a,
+intro h,
+cases h,
+right,
+right,
+left,
+assumption,
+contradiction,
+end
+
+
+section sets
+/-
+We temporarily assume, within this
+section, that 
+-/
+variable T : Type
+variable x : T
+variables A B C : set T
+
+/-
+For any type, T, a set T is a T → Prop:
+a property of values of type T, namely
+the property of being in the given set.
+-/
+#reduce set T
+
+/-
+Membership, written ∈, where x ∈ A is
+read as "x is in A" or "x is a member of
+A", is the proposition, (A x), i.e., that
+x has the property of being in A.
+-/
+#reduce x ∈ A
+
+/-
+The intersection of A and B, written 
+A ∩ B, is the property of being in set 
+A and being in set B.
+-/
+#reduce x ∈ A ∩ B
+
+
+/-
+The union of sets, A and B, written 
+A ∪ B, is the property of being in set 
+A or being in set B.
+-/
+#reduce x ∈ A ∪ B
+
+
+/-
+The difference of sets, A and B, written 
+A \ B, is the property of being in set 
+A and not being in set B.
+-/
+#reduce x ∈ A \ B
+
+/-
+The complement a set, A, written in Lean
+as -A, is the property of not being in 
+the set, A. 
+-/
+#reduce x ∈ -A
+
+
+#reduce A ⊆ B
+
+
+#check ext 
+
+-- set equality
+example : A = B :=
+begin
+apply ext,
+intro x,
+apply iff.intro,
+intro,
+-- etc.
+end
+
+
+/-
+A is a subset of A ∪ B
+-/
+example : ∀ T : Type, ∀ s t: set T, s ⊆ s ∪ t :=
+begin
+assume T s t x, 
+assume h : x ∈ s,
+show x ∈ s ∪ t, 
+change s x ∨ t x,
+change s x at h,
+from or.inl h
+end
+
+/-
+The empty set, ∅, is a subset of any set.
+-/
+example : ∀ T : Type, ∀ s: set T, ∅ ⊆ s :=
+begin
+assume T s x,
+assume h : x ∈ (∅ : set T),
+have f: false := h,
+contradiction,
+end
+
+/-
+Subset is a transitive relation on sets
+-/
+example : 
+    ∀ T : Type, ∀ A B C: set T, 
+        A ⊆ B → B ⊆ C → A ⊆ C 
+:=
+begin
+    assume T s t u,
+    assume st tu,
+    intro,
+    intro,
+    have z := st a_1,
+    exact (tu z),
+end  
+
+/-
+If an object is in both sets A and B
+then it is in their intersection.
+-/
+example : 
+∀ T : Type, forall A B : set T, 
+∀ x, x ∈ A → x ∈ B → x ∈ A ∩ B :=
+begin
+assume T A B x,
+assume hA : x ∈ A,
+assume hB : x ∈ B,
+show x ∈ A ∧ x ∈ B, from
+and.intro hA hB,
+end
+
+
+/-
+If an object is in some set A or
+set B then it is in their union.
+-/
+example : 
+∀ T : Type, forall A B : set T, 
+∀ x, x ∈ A ∨ x ∈ B → x ∈ A ∪ B :=
+begin
+assume T A B x,
+intro dis,
+show x ∈ A ∨ x ∈ B,
+by assumption,
+end
+
+-- from Avigad
+/-
+A minus B is a subset of A
+-/
+example : A \ B ⊆ A :=
+begin
+assume x,
+assume mem : x ∈ A \ B,
+cases mem, 
+from mem_left,
+end
+
+-- from Avigad
+/-
+A minus B is contained in the complement of B
+-/
+example : A \ B ⊆ -B :=
+begin
+assume x,
+assume mem : x ∈ A \ B,
+change x ∈ A ∧ ¬ x ∈ B at mem,
+change x ∉ B,
+exact mem.right,
+end
+
+example : A \ B = A ∩ -B :=
+begin
+apply ext,
+intro,
+split,
+intro h,
+exact h,
+intro h,
+exact h,
+end
+
+
+-- Powerset
+
+/-
+The powerset of a set, A, is the set of all
+of the subsets of A.
+-/
+
+#check powerset A
+#check 𝒫 A
+#reduce 𝒫 A
+
+/-
+Note about implicit arguments. In the preceding
+definition we see {{ }} brackets, rendered using
+the characters, ⦃ ⦄. This states that the argument
+is to be inferred from context (is implicit) but
+is expected only when it appears before another
+implicit argument. This notation tells Lean not
+to "eagerly" consume the argument, as soon as it
+can, but to wait to consume it until it appears,
+implicitly, before another implicit argument in a
+list of arguments. This is a notational detail 
+that it's not worth worry about at the moment. 
+-/
+
+
+-- Tuples
+/-
+If S and T are types, then S × T, called the 
+product type of S and T, is the type of ordered
+pairs, (s, t), where s : S and t : T. In Lean 
+and in ordinary mathematics, elements of such a
+type are represented as ordered pairs of values
+enclosed in parenthesis.
+-/
+
+#check ℕ × ℕ 
+#check (1, 2)
+/-
+This ordered pair notation in Lean in shorthand 
+for the appliation of the constructor, prod.mk,
+two two arguments. The constructor takes the 
+type arguments implicitly.
+-/
+#check prod.mk 1 2
+
+-- Product set
+
+/-
+The Cartesian product set of two sets, A 
+and B, denoted as A × B in everyday math,
+is the set of all ordered pairs, (a, b) 
+(values of type prod A B), where a ∈ A 
+and b ∈ B. In Lean, the set product of 
+sets, A and B, is denoted as set.prod A B.
+There is no nice infix operator notation
+for set products at this time.
+
+Note carefully: there is a distinction
+here between product types and product sets.
+Product types are types, while product sets
+are sets. And sets are not types in Lean.
+Rather they're specified as properties.
+
+This is potentially confusing. It is made
+more confusing by the fact that Lean has 
+a way to convert a set into a special type
+called a subset type: the type of elements
+in the set, along with proofs of membership.
+And if you apply prod to two sets, you'll 
+get a subset type!
+-/
+
+#check set.prod y z     -- product set type
+#reduce set.prod y z    -- product set property
+#check prod y z         -- oops, a subset type
+#check y × z            -- oops, same thing
+#reduce prod y z        -- oops, not what we want
+
+
+/-
+A set product is just a set, which is to
+say it's defined by a predicate, s. Such a
+predicate is true for exactly the members
+of the set. That is, (s x) is a proposition
+that is true iff x ∈ s. The predicate that
+defines a product set is a predicate on
+ordered pairs. It's basically defined like
+this:
+-/
+
+def mysetprod (S T : Type) (s : set S) (t : set T) : set (S × T) :=
+{p : prod S T | p.1 ∈ s ∧ p.2 ∈ t}
+
+/-
+What this says, then, is that the product set
+of s (a set of S-type values) and t (a set of
+T-type values) is the set of pairs, p, each of
+type (prod S T), and each thus an ordered pair,
+p = (p.1, p.2), where p.1 ∈ s and p.2 ∈ t.
+-/
+
+
+example : (1, 2) ∈ set.prod y z := 
+begin
+change (λ (p : ℕ × ℕ),
+  (p.fst = 3 ∨ p.fst = 2 ∨ p.fst = 1 ∨ false) ∧ (p.snd = 4 ∨ p.snd = 3 ∨ p.snd = 2 ∨ false)) (1,2),
+  split,
+  right,right,left,apply rfl,
+  right,right,left,apply rfl,
+end
+
+/-
+Note: { x // A x} is the same as { x | A x}, and
+both are shorthands for "subtype (λ x : α, p x)." 
+The idea is that the type, {x : α // p x}, denotes 
+the collection of elements of α with property p.
+-/
+example : { x // A x} = { x | A x} := rfl
+
+
+
+
+
+
+
+-- Insertion
+
+/-
+We can provide an operation that we can think
+of as "inserting" an element into a set, as a
+function that takes an element and a set and
+returns the set containing that element along
+with the elements of the original set. 
+-/
+
+def myInsert { T : Type } (a : T) (s : set T) : set T :=
+    {b | b = a ∨ b ∈ s}
+#reduce myInsert 5 { 1, 2, 3, 4 }
+
+-- The Lean set library provides "insert"
+#reduce insert 5 { 1, 2, 3, 4 }
+
+end sets
