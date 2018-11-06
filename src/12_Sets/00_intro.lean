@@ -18,7 +18,8 @@ underpins Lean and relate proof assistants.
 There are two things to know about how sets 
 and operations involving sets are reprented
 in Lean. First, in Lean, set is what we call
-a type constructor. Second, sets are identified with membership predicates. We discuss each of
+a type constructor. Second, sets are identified 
+with membership predicates. We discuss each of
 these idea next.
 -/
 
