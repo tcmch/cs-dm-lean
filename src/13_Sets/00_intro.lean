@@ -2,78 +2,139 @@ import data.set
 open set
 
 /-
-In Lean, set is a type constructor. It takes
-a type, T, as an argument and returns, as a 
-result, the type, set T, which  we read as the
-type of any set with elements of type, T. The
-type of set is thus Type → Type. Lean tells
-us that this type constructor can take a type
-in any type universe, i.e., Type, Type 1, etc.
-We needn't be concerned with that here.
+Intuitively a set is a collection of objects.
+That said, if one is not careful about what
+one allows a set to be, paradoxes can arise,
+making the logical system inconsistent, and 
+thus useless. For more details, search for an
+explanation of Russell's paradox. 
+
+The work needed to repair Russell's original
+mistake led to Zermelo-Frankel set theory, the
+set theory of everyday mathematics, and also,
+at least indirectly to the type theory that
+underpins Lean and relate proof assistants.
+
+There are two things to know about how sets 
+and operations involving sets are reprented
+in Lean. First, in Lean, set is what we call
+a type constructor. Second, sets are identified with membership predicates. We discuss each of
+these idea next.
+-/
+
+-- Type Constructors: set
+
+/-
+First, set is a type constructor, not a type.
+It takes a type parameter as an argument and 
+returns a type, one now specialized to the 
+argument type. Because it takes a type and
+returns a type, set (and a type constructor
+more generally) is a function:  one of type,
+Type → Type. So, for example, set int is the 
+type of sets with int-valued elements.
+
+Lean tells us that the set type constructor can 
+actually take a type in any type universe, i.e., Type (which is really Type 0), Type 1, Type 2,
+etc. We needn't be concerned with that here.
 -/
 
 #check set
 
+-- Membership Predicates
+
 /-
-EXERCISE: Is set a type? Discuss.
+Second, sets in Lean are identified with
+membership predicates: of type T → Prop, 
+where T is type of elements in a set. The 
+membership predicate is true for values in
+the set and not true otherwise. 
 -/
 
 #check set nat
-
-/-
-The type, set nat, or set T more 
-generally, represents a property
-of value of type nat (or T): the
-property of "being in a given set!"
--/
-
 #reduce set nat
 
+-- Example: the empty set of ℕ 
+
 /-
-We now define e to be the empty
-set of natural numbers. Lean gives
-us ordinary set display notation
-(using curly braces around a list
-of elements) for this purpose.
+For example the empty set of ℕ values, also 
+written as ∅ ℕ, is literally defined as the predicate, λ n : ℕ, false. This predicate is
+satisfied for no value of type ℕ, and so the 
+set it defines is the empty set. 
 -/
 
-def e: set nat := { }
+#check (∅ : set ℕ )
 
 /-
-The symbol, ∅, is often used
-to represent the empty set (of
-values of some type).
+We think of the predicate that defines a set 
+as specifying a property of elements of the 
+kind in or not in the set. The type, set ℕ, 
+is thus equated with a predicate on ℕ, which
+we consider as defining the property of being
+of being a member of the set. Sets (at least)
+in Lean are identified with their membership
+predicates. 
+
+As an example, the empty set of ℕ is defined
+by the predicate that is false for every ℕ.
+No natural number satisfies this predicate.
+The set it denotes is the set of values that
+satisfy it, which is the empty set. Study the
+following code with care and understand it.
 -/
 
-def e': set nat := ∅ 
+#reduce (∅ : set ℕ)
 
 /-
-We can't just say "e : set := {}"",
-because then Lean does not have 
-enough context to infer the type
-of the elements.
+The predicate  that defines the empty 
+set is, as we've already discussed, 
+false(n): i.e., the function of type 
+ℕ → Prop that for any value, n : ℕ, 
+returns the proposition false. No 
+ℕ  can satisfy this predicate by 
+making it anything other than false. 
+The set it designates is the empty set.
+-/
+
+-- Display Notation
+
+/-
+Let's bind and empty set of ℕ to the
+identifier, e. We can also write the
+empty set using curly braces, or what
+we call set display notation.
+-/
+
+def e: set ℕ := { }
+
+/-
+The symbol, ∅, is often used to represent 
+the  empty set (of values of whatever type).
+-/
+
+def e': set ℕ := ∅ 
+
+/-
+We can't write "e : set := {}"", because 
+then Lean would not have enough context 
+to infer the type of the set elements.
 -/
 
 /-
 EXERCISE: What is the property of 
 natural numbers that characterizes 
-the empty set of natural numbers?
+e, the empty set of natural numbers?
+Give you answer as a predicate: a
+function from ℕ to Prop. Give a λ 
+abstraction as an answer.
 -/
-
-#reduce e
 
 /-
-Study that carefully. The predicate 
-that defines the empty set is, as
-we've alreadydiscussed, false(n):
-i.e., the function of type ℕ → Prop
-that for any value, n : ℕ, returns
-the proposition false. No natural
-number can makes the (proposition
-derived from the) predicate true, 
-so no natural number is in the set
-that it represents.
+EXERCISE: What predicate defines the
+set of all ℕ values?
 -/
+
+-- Set Builder Notation
 
 /-
 We can also represent the empty 
@@ -82,19 +143,22 @@ Set builder notation is also called
 set comprehension notation.
 -/
 
-def e'' : set nat := { n | false }
 
-def ev(n : ℕ):Prop := ∃ m, m + m = n 
-
-def v : set nat := { n | ev n } 
 /-
-We read the right hand side as
-"the set of values, n, for which
-the predicate, false, is true."
-As there is no value that makes
-false true, the set is empty. It
-has no elements.
+Here we define the empty set of ℕ again
 -/
+
+def e'' : set ℕ := { n | false }
+
+
+/-
+Now we define the entire set of even ℕ 
+-/
+
+def evs : set ℕ := { n | ∃ m, m + m = n } 
+
+
+-- Singleton Sets
 
 /-
 Here's another set of ℕ, containing 
@@ -117,67 +181,75 @@ answer before you look!
 The answer is a little surprising.
 The predicate λ n, n = 1, would do
 to define this set, but instead Lean
-uses λ n, n = 1 ∨ false. The basic
-intuition is that, were we to remove
-the 1 from this set, we'd be left 
-with the empty set, the predicate
-for which is that predicate false.
+uses λ n, n = 1 ∨ false. Lean could
+have, and in some cases will, leave
+off the (∨ false) at the end. See it
+is so in the following example code.
 -/
 
 def x' := { n | n = 1 }
-
 #reduce x'
 
 /-
-The two notations give rise to
-slightly different but equivalent
-predicates.
+The two different notations give rise 
+to slightly different but equivalent
+predicates, and thus to the same sets.
 -/
 
 -- SET MEMBERSHIP
 
 /-
+So what does set membership mean?
 By the notation 1 ∈ x we mean the
 proposition that "1 is in, or is 
 a member of the set, x." This is
-simplythe proposition obtained 
+simply the proposition obtained 
 by applying the predicate, x, to
-the value, 1. The proposition is
-literally the value (x 1). Recall 
-that function application works 
-by substituting the argument (1)
-for the parameter (a) in the body 
-of the predicate (function).  In
-this case, the predicate, x, is
-λ (n : ℕ), n = 1. Applying this
-predicate/function the value, 1,
-reduces to the proposition that:
+the value, 1. x is the set and it
+is the predicate that defines the
+set. In Lean they are the same
+thing. The proposition 1 ∈ x is 
+definitionally the same as (x 1). 
+The predicate, i.e., the set, x, 
+is defined as  λ (n : ℕ), n = 1. 
+Applying this predicate/function 
+to 1 yields the proposition that:
 1 = 1 ∨ false. This proposition,
 in turn, is easy to prove, and so,
 yes, indeed, 1 is in the set x.
 -/
 
+/-
+Reducing 1 ∈ x reveals the 
+proposition obtained by applying
+the x predicate to the value 1 
+to get a membership proposition
+for 1. 
+-/
 #reduce 1 ∈ x
+
+/-
+In this case, the membership
+proposition, 1 ∈ x, is true, as
+we prove next.
+-/
 
 example : 1 ∈ x :=
 -- 1 = 1 ∨ false
 begin
+/-
+It can be easier to work with proofs 
+about sets if you use the change tactic
+to ask Lean to show you the predicate 
+that the goal represents. You can use
+#reduce to see the proposition that the
+goal using set notation denotes. 
+-/
+change 1 = 1 ∨ false,
+-- the rest is straightforward
 apply or.intro_left,
 exact rfl,
 end
-
-/-
-Because the proposition, 1 ∈ x,
-is defined to be the disjunction,
-(1 = 1 ∨ false), you can ask Lean 
-to change the format of the goal 
-accordingly. If doing this makes 
-it easier for you to see how to 
-proceed with the proof, feel free 
-to use it. You can cut and paste
-the disjunction from the string
-that #reduce 3 ∈ u prints out.
--/
 
 
 example : 1 ∈ x :=
@@ -925,7 +997,7 @@ that 5 is also a member of the result set.
 -/    
 #reduce myInsert 5 { 1, 2, 3, 4 }
 
--- The Lean set library provides "insert"
+-- The Lean math library defines "insert"
 #reduce insert 5 { 1, 2, 3, 4 }
 
 
