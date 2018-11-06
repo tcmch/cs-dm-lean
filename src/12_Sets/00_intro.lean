@@ -518,42 +518,81 @@ end
 -- SUMMARY SO FAR
 
 /-
-A set can be characterized by
-a predicate: one that is true
-for each member of the set and
-false otherwise.
-
-The union of two sets is given
-by the disjunction (or) of the 
-predicates:
-(a ∈ y ∪ z) = (a ∈ y) ∨ (a ∈ z)
-
-The conjunction is defined by 
-their conjunction:
-(x ∈ y ∩ z) = (x ∈ y ∧ a ∈ z)
-
-Their difference is defined by 
-the conjunction of the first and
-the negation of the second:
-(a ∈ y \ z) = ( a ∈ y) ∧ (¬ a ∈ z)
+The examples in this summary
+require you to recall that 
+previously in this file we 
+defined x, y,  and z to be the 
+ℕ sets, { 1 }, { 1, 2, 3 }, 
+and { 2, 3, 4 }.
 -/
+
+#print x
+#print y
+#print z
+
+/-
+A set can be, and in Lean is, 
+characterized by a predicate: 
+one that is true for each member 
+of the set and false otherwise.
+It is a "membership predicate".
+
+Consider, for example, what it
+means for 1 or for 2 to be in the
+set, x. We write these propositions
+as 1 ∈ x and as 2 ∈ x respectively.
+-/
+
+#reduce 1 ∈ x
+#reduce 2 ∈ x
+
+
+/-
+The union of two sets is given
+by the disjunction (or, ∨) of the 
+respective membership predicates:
+(a ∈ y ∪ z) means (a ∈ y) ∨ (a ∈ z).
+-/
+
+#reduce 1 ∈ (y ∪ z)
+#reduce (1 ∈ y) ∨ (1 ∈ z)
+
+
+/-
+The intersection of two sets is
+defined by the conjunction of the
+respective membership predicates:
+(x ∈ y ∩ z) = (x ∈ y ∧ a ∈ z)
+-/
+
+#reduce (1 ∈ y ∩ z)
+
+/-The difference of two sets, y \ z,
+is defined by the conjunction of the 
+first and the negation of the second
+membership predicates for the sets:
+(a ∈ y \ z) = ( a ∈ y) ∧ (¬ a ∈ z).
+-/
+
+#reduce 1 ∈ y \ z
+
 
 -- PART II
 
 /-
 Now we introduce additional basic 
 set theory concepts: these include
-notionss of subsets, set euality,
-power sets, product sets, and an 
-operator that simulates insertion 
-of an element into a set.
+notions of subsets, set equality,
+power sets, product sets, tuples,
+and a function that simulates an 
+element insertion operator for sets. 
 
 In all cases, we see that these
 set operations can be understood
 as operations on the predicates
 that define sets. The connection
-of set theory to logic becomes
-clear and explicit.
+of set theory to predicate logic 
+is thus made clear and explicit.
 -/
 
 -- SUBSET
@@ -569,13 +608,29 @@ a member of Y. Logically, X is a
 subset of Y if the property of
 being in X implies the property
 of being in Y.
+-/
 
-So, { 1, 2 } ⊆ { 1, 2, 3 } but
-¬ { 1, 2 } ⊆ { 1, 3, 4}. In the
+#check x ⊆ y
+#reduce x ⊆ y
+
+/-
+Note that what is displayed when you
+hover over the reduce line includes 
+"script" curly brace characters. These
+indicate a slight variant on implicit
+arguments that we needn't get in any
+detail right now. Just think of them
+as indicating implicit arguments.
+-/
+
+/-
+So, { 1, 2 } ⊆ { 1, 2, 3 }, for
+example, but is is not the case
+that { 1, 2 } ⊆ { 1, 3, 4}. In the
 first case, every element of the
 set, { 1, 2 }, is also in the set
 { 1, 2, 3 }, so { 1, 2 } is a 
-subset of { 1, 2, 3 }, but that
+subset of { 1, 2, 3 }; but that
 is not the case for { 1, 2 } and
 { 1, 3, 4 }.
 -/
@@ -590,49 +645,87 @@ of each of the following sets of ℕ.
 * { 1, 2, 3 }
 
 EXERCISE: How many subsets are there
-f a set containing n elements. Does 
+of a set containing n elements. Does 
 your formula work even for the empty
-set, containing 0 elements?
--/
-
-/-
-For the next set of examples please
-recall that we defined the set nat
-values, x, y, and z, above, as:
-
-* def x : set nat := { 1 }
-* def y : set nat := { 1, 2, 3 }
-* def z : set nat := { 2, 3, 4 }
+set?
 -/
 
 /-
 We can now see that the subset relation
 on sets has a precise logical meaning. 
-What x ⊆ y means is that for any value,
-e, e ∈ x → e ∈ y. In logical symbols,  
-∀ e, e ∈ x → e ∈ y.
+x ⊆ y means ∀ a, a ∈ x → a ∈ y.
 -/
 
 #check x ⊆ y
 #reduce x ⊆ y
 
 /-
-Note that what is displayed when you
-hover over the reduce line includes 
-script curly brace characters. These
-indicate a slight variant on implicit
-arguments that we needn't get in any
-detail right now. Just think of them
-as saying to use implicit arguments.
+A quick note on a pattern that appears
+often in predicate logic:
+
+Let's look at the definition of the 
+subset relation again, for sets of ℕ 
+values, x and y. Here is what it means
+for y ⊆ x.
+
+∀ (a : ℕ), a ∈ y → a ∈ z.
+
+Let's translate this to logicky English.
+
+For any natural number, a, if a is in
+y then e is in z. That is what is means
+for y to be a subset of z.
+
+What's interesting in this formulation
+is the combination of a ∀, which picks
+out *all* elements of the ℕ type, followed
+by a conditional (implication), where the
+premise imposes a further constraint on 
+the elements being considered. It need 
+only be true that every ℕ that is *also*
+and element of y be a member of z for y
+to be a subset of z. 
+
+This is a common pattern in logic. The
+general form is ∀ x : T, P x → Q x. It 
+is read as saying that for any x *with 
+property P*, some other property, Q, 
+must hold. In effect it quantifies over
+the values of type T with property P,
+and then makes a statement about those
+values, in particular: here they they
+also have property Q.
 -/
 
--- PROOF OF A SUBSET RELATION
 /-
 Okay, so let assert and prove a
 proposition involving the subset
-relation. We'll show that x ⊆ y
-by proving that if a ∈ x (that 
-is, if (x a)) then a ∈ y.
+relation. We'll show that x ⊆ y,
+i.e., { 1 } ⊆ { 1, 2, 3 }. To do
+it we have to proving that if 
+a ∈ x then a ∈ y. Now remember
+what x and a ∈ x are. First, x
+is understood to be a set, but 
+it is specifically a membership
+predicate, of type ℕ → Prop, and
+a ∈ x is a proposition, namely 
+the one obtained by applying the
+membership predicate to a: (x a).
+If (x a), i.e., a ∈ x, is true,
+i.e., provable, then a is said 
+to be a member of the set, x. 
+-/
+
+/-
+Let's have another look at what
+the proposition, x ⊆ y, means: 
+for any a, if a ∈ x then a ∈ y.
+-/
+
+#reduce x ⊆ y
+
+/-
+So let's prove it's true.
 -/
 
 example : x ⊆ y := 
@@ -657,7 +750,8 @@ of left and right tactics. (You do
 need to remember that ∨ is right
 associative, so left gives you the
 left disjunct and right gives you
-everything else.)
+everything else to the right of the 
+leftmost disjunct.
 -/
 assume a,
 intro h,
@@ -673,37 +767,52 @@ end
 section sets
 /-
 We temporarily assume, within this
-section, that 
+section, that T is an arbitrary type,
+x is an arbitrary value of type T,
+and that A, B, and C are arbitrary
+sets of T-type elements.
 -/
 variable T : Type
 variable x : T
 variables A B C : set T
 
+
 /-
-For any type, T, the type, (set T), is 
-the type,(T → Prop). A specific set is 
-a specific property of this type: the 
-property of being in the given set.
+We can confirm our understanding
+of the subset relation using this
+notation. Now A and B are sets, and
+in Lean that means that these sets
+are represented by their membership
+predicates. They are membership
+predicates.
 -/
-#reduce set T
 
-
-
--- SET EQUALITY
+#reduce A ⊆ B
 
 /-
-The principle of extensionality for
+EXERCISE: Explain precisely what 
+the message produced by #reduce is
+saying. What is another way that
+Lean could have written A a or B a?
+-/
+
+
+-- SET EQUALITY (and extensionality)
+
+/-
+The "principle of extensionality" for
 sets stipulates that if one can show
-that e ∈ A ↔ e ∈ B then A = B. 
+that ∀ e, (e ∈ A ↔ e ∈ B) → (A = B). 
 -/
+
+#check ext
 
 /-When faced with a goal of proving 
 that two sets, A and B are equal,
-i.e., that A = B, one applies this 
+i.e., that A = B, one can apply this 
 principle to reduce the goal to that 
-of showing that e ∈ A ↔ e ∈ B.
+of showing that ∀ e, e ∈ A ↔ e ∈ B.
 -/
-#check ext 
 
 -- set equality
 example : A = B :=
@@ -725,6 +834,56 @@ to prove.
 -/
 end
 
+/-
+Let's prove that { 1 } = { 1 }.
+Remember we defined x to be { 1 }.
+-/
+
+def p : set ℕ := { 1, 2 }
+def q : set ℕ := { 2, 1 }
+
+#reduce 1 ∈ p
+
+theorem oo : p = q  := 
+begin
+apply ext,
+intro x,
+apply iff.intro,
+
+-- forward direction
+
+intro, 
+-- remember that a is a disjunction
+cases a with first rest,
+/-
+We introduce a new tactic: rewrite,
+written as rw h or rw ←h. When applied 
+to a proof, h : x = y or h : x ↔ y, of 
+an equality or a bi-implication, it 
+rewrites any occurrences of the left 
+side, x, in the goal, with the right 
+side, y. If you want to rewrite by 
+replacing occurrences of the right 
+side, y, with the left, x, use rw ←h.
+-/
+rw first,
+right, left, apply rfl,
+cases rest,
+rw rest,
+apply or.inl, apply rfl, 
+-- rest is now ((λ n, false) x) = false!
+apply false.elim rest,
+
+-- backward direction
+intro,
+cases a,
+rw a,
+apply or.inr, left, apply rfl,
+cases a, 
+rw a,
+left, apply rfl,
+apply false.elim a,
+end
 
 
 -- POWERSET
@@ -771,6 +930,17 @@ begin
   assume t,
   assume pf_t_in_A,
   assumption
+end
+
+example: ({1, 3}: set ℕ) ∈ 𝒫 ({1, 2, 3}: set ℕ) :=
+begin
+  assume t,
+  assume pf_t_in_1_3,
+  cases pf_t_in_1_3 with pf_t_is_3 pf_t_in_1 ,
+    exact or.inl pf_t_is_3,
+
+    apply or.inr,
+    exact or.inr pf_t_in_1,
 end
 
 
@@ -928,6 +1098,16 @@ that 5 is also a member of the result set.
 -- A SECOND LOOK AT BASIC LOGIC OF SETS
 
 /-
+Several of these examples are adapted
+from Jeremy Avigad's book, Logic and 
+Proof. Prof. Avigad (CMU) is one of the
+main contributors to the development of
+Lean, and he leads the development of 
+its mathematical libraries, including
+the one you're now using for sets.
+-/
+
+/-
 We take a second look at the predicates
 associated with various set data types
 and operations. This time, we look at
@@ -994,16 +1174,6 @@ the set, A.
 
 
 -- SOME EXAMPLE FACTS AND PROOFS
-
-/-
-Several of these examples are adapted
-from Jeremy Avigad's book, Logic and 
-Proof. Prof. Avigad (CMU) is one of the
-main contributors to the development of
-Lean, and especially to the development
-of its mathematical libraries, including
-the one you're now using for sets.
--/
 
 /-
 A is a subset of A ∪ B
