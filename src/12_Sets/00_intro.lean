@@ -1095,7 +1095,7 @@ that 5 is also a member of the result set.
 #reduce insert 5 { 1, 2, 3, 4 }
 
 
--- A SECOND LOOK AT BASIC LOGIC OF SETS
+-- EXAMPLES
 
 /-
 Several of these examples are adapted
@@ -1106,74 +1106,6 @@ Lean, and he leads the development of
 its mathematical libraries, including
 the one you're now using for sets.
 -/
-
-/-
-We take a second look at the predicates
-associated with various set data types
-and operations. This time, we look at
-what it means propositionally for some
-object x to be a member of various sets.
--/
-
--- MEMBERSHIP
-
-/-
-The proposition that a value, e, is in 
-a set A, is written as e ∈ A, and can be
-read as "e is in A" or "e is a member of
-A". e ∈ A is literally the proposition, 
-(A x): the application of the predicate
-that defines the set to the value, e, 
-yielding the proposition that e, in
-particular, is in A. The following line
-of code makes clear that x ∈ A is really
-just the proposition, A x.
--/
-
-#reduce x ∈ A
-
--- INTERSECTION
-
-/-
-The intersection of A and B, written 
-A ∩ B, is the property of being in set 
-A and being in set B.
--/
-#reduce x ∈ A ∩ B
-
-
--- UNION
-
-/-
-The union of sets, A and B, written 
-A ∪ B, is the property of being in set 
-A or being in set B.
--/
-#reduce x ∈ A ∪ B
-
-
--- DIFFERENCE
-
-/-
-The difference of sets, A and B, written 
-A \ B, is the property of being in set 
-A and not being in set B.
--/
-#reduce x ∈ A \ B
-
-
--- COMPLEMENT
-
-/-
-The complement a set, A, written in Lean
-as -A, is the property of not being in 
-the set, A. 
--/
-#reduce x ∈ -A
-
-
-
--- SOME EXAMPLE FACTS AND PROOFS
 
 /-
 A is a subset of A ∪ B
