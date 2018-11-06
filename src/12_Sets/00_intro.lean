@@ -59,7 +59,8 @@ the set and not true otherwise.
 
 /-
 For example the empty set of ℕ values, also 
-written as ∅ ℕ, is literally defined as the predicate, λ n : ℕ, false. This predicate is
+written as ∅ ℕ, is literally defined as the 
+predicate, λ n : ℕ, false. This predicate is
 satisfied for no value of type ℕ, and so the 
 set it defines is the empty set. 
 -/
@@ -513,6 +514,7 @@ have f : false := pf,
 contradiction,
 end
 
+
 -- SUMMARY SO FAR
 
 /-
@@ -541,10 +543,10 @@ the negation of the second:
 /-
 Now we introduce additional basic 
 set theory concepts: these include
-notionss of subsets, power sets, 
-product sets, and an operator that
-simulates insertion  of an element
-into a set.
+notionss of subsets, set euality,
+power sets, product sets, and an 
+operator that simulates insertion 
+of an element into a set.
 
 In all cases, we see that these
 set operations can be understood
@@ -554,7 +556,7 @@ of set theory to logic becomes
 clear and explicit.
 -/
 
--- Subset
+-- SUBSET
 
 /-
 Subset, denoted ⊆, is a binary 
@@ -578,62 +580,6 @@ is not the case for { 1, 2 } and
 { 1, 3, 4 }.
 -/
 
-
-/-
-Remember that in Lean, "set" is 
-not a type but a type constructor,
-a.k.a., a polymorphic type. That is
-for any type, T, (set T) is a type,
-namely the type of sets containing
-elements of type T. So, for example,
-(set nat) is a type, the type of a
-set whose members are of type nat. 
-Even an empty set always has an 
-element type. For example, the 
-empty set of ℕ, ∅ : set nat, is 
-not the same as the empty set of 
-strings, ∅ : set string.
--/
-
-/-
-Hover over "set" in the following
-code to see that set is not a type
-but a type constructor: essentially
-a function that takes a type (of the
-elements) and returns a type (set of
-elements of that type). You can also
-see that (set nat) and (set string)
-are now types, and different types 
-at that.
--/
-
-#check set nat
-#check set string
-
-/-
-In particular, a type, set T, is
-defined to by a property, i.e., a
-predicate with one argument, of
-type T → Prop. A set is defined by
-a property: the property of being 
-a member of the set! So, in Lean, 
-if z is a set of Ts, and e is an 
-object of type T, then (z e) is 
-a proposition: one that's true 
-(for which there is a proof) iff 
-e has the property of being in z.
--/
-
-/-
-Inspect the following lines to 
-see that the types of set nat and
-set string are "properties" of nat
-and of string, respectively.
--/
-
-#reduce set nat
-#reduce set string
-
 /-
 EXERCISE: List all of the subsets
 of each of the following sets of ℕ. 
@@ -649,7 +595,6 @@ your formula work even for the empty
 set, containing 0 elements?
 -/
 
-
 /-
 For the next set of examples please
 recall that we defined the set nat
@@ -664,8 +609,14 @@ values, x, y, and z, above, as:
 We can now see that the subset relation
 on sets has a precise logical meaning. 
 What x ⊆ y means is that for any value,
-e, e ∈ x → e ∈ y.
+e, e ∈ x → e ∈ y. In logical symbols,  
+∀ e, e ∈ x → e ∈ y.
+-/
 
+#check x ⊆ y
+#reduce x ⊆ y
+
+/-
 Note that what is displayed when you
 hover over the reduce line includes 
 script curly brace characters. These
@@ -673,11 +624,9 @@ indicate a slight variant on implicit
 arguments that we needn't get in any
 detail right now. Just think of them
 as saying to use implicit arguments.
-
 -/
-#check x ⊆ y
-#reduce x ⊆ y
 
+-- PROOF OF A SUBSET RELATION
 /-
 Okay, so let assert and prove a
 proposition involving the subset
@@ -739,63 +688,8 @@ property of being in the given set.
 #reduce set T
 
 
--- SET MEMBERSHIP
 
-/-
-The proposition that a value, e, is in 
-a set A, is written as e ∈ A, and can be
-read as "e is in A" or "e is a member of
-A". e ∈ A is literally the proposition, 
-(A x): the application of the predicate
-that defines the set to the value, e, 
-yielding the proposition that e, in
-particular, is in A. The following line
-of code makes clear that x ∈ A is really
-just the proposition, A x.
--/
-#reduce x ∈ A
-
--- INTERSECTION
-
-/-
-The intersection of A and B, written 
-A ∩ B, is the property of being in set 
-A and being in set B.
--/
-#reduce x ∈ A ∩ B
-
-
--- UNION
-
-/-
-The union of sets, A and B, written 
-A ∪ B, is the property of being in set 
-A or being in set B.
--/
-#reduce x ∈ A ∪ B
-
-
--- DIFFERENCE
-
-/-
-The difference of sets, A and B, written 
-A \ B, is the property of being in set 
-A and not being in set B.
--/
-#reduce x ∈ A \ B
-
-
--- COMPLEMENT
-
-/-
-The complement a set, A, written in Lean
-as -A, is the property of not being in 
-the set, A. 
--/
-#reduce x ∈ -A
-
-
--- EQUALITY OF SETS
+-- SET EQUALITY
 
 /-
 The principle of extensionality for
@@ -832,7 +726,8 @@ to prove.
 end
 
 
--- Powerset
+
+-- POWERSET
 
 /-
 The powerset of a set, A, is the set of all
@@ -1028,6 +923,73 @@ that 5 is also a member of the result set.
 
 -- The Lean math library defines "insert"
 #reduce insert 5 { 1, 2, 3, 4 }
+
+
+-- A SECOND LOOK AT BASIC LOGIC OF SETS
+
+/-
+We take a second look at the predicates
+associated with various set data types
+and operations. This time, we look at
+what it means propositionally for some
+object x to be a member of various sets.
+-/
+
+-- MEMBERSHIP
+
+/-
+The proposition that a value, e, is in 
+a set A, is written as e ∈ A, and can be
+read as "e is in A" or "e is a member of
+A". e ∈ A is literally the proposition, 
+(A x): the application of the predicate
+that defines the set to the value, e, 
+yielding the proposition that e, in
+particular, is in A. The following line
+of code makes clear that x ∈ A is really
+just the proposition, A x.
+-/
+
+#reduce x ∈ A
+
+-- INTERSECTION
+
+/-
+The intersection of A and B, written 
+A ∩ B, is the property of being in set 
+A and being in set B.
+-/
+#reduce x ∈ A ∩ B
+
+
+-- UNION
+
+/-
+The union of sets, A and B, written 
+A ∪ B, is the property of being in set 
+A or being in set B.
+-/
+#reduce x ∈ A ∪ B
+
+
+-- DIFFERENCE
+
+/-
+The difference of sets, A and B, written 
+A \ B, is the property of being in set 
+A and not being in set B.
+-/
+#reduce x ∈ A \ B
+
+
+-- COMPLEMENT
+
+/-
+The complement a set, A, written in Lean
+as -A, is the property of not being in 
+the set, A. 
+-/
+#reduce x ∈ -A
 
 
 
