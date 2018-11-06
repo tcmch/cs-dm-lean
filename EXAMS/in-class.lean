@@ -1,3 +1,7 @@
+import data.set.basic
+open set
+
+
 /-
 This problem tests your ability to 
 contruct proofs using case analysis 

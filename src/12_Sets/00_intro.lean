@@ -252,6 +252,13 @@ exact rfl,
 end
 
 
+/-
+Here we use some shorthand tactics to
+make it easier to write the proof. It's
+good to learn this shortcuts. They make
+quick work of some proof goals.
+-/
+
 example : 1 ∈ x :=
 -- 1 = 1
 begin
@@ -263,7 +270,7 @@ trivial,
 end
 
 
--- ANOTHER EXAMPLE
+-- MORE EXAMPLE
 
 /-
 Here's two sets with three
@@ -870,6 +877,7 @@ begin
   assumption
 end
 
+
 -- Tuples
 /-
 If S and T are types, then the product type
@@ -1034,8 +1042,6 @@ of its mathematical libraries, including
 the one you're now using for sets.
 -/
 
--- SUBSET
-
 /-
 A is a subset of A ∪ B
 -/
@@ -1093,7 +1099,7 @@ end
 
 
 /-
-If an object is in some set A or
+If an object is in set A or is in
 set B then it is in their union.
 -/
 example : 
