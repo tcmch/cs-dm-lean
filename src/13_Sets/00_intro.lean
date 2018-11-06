@@ -849,6 +849,26 @@ list of arguments. This is a notational detail
 that it's not worth worry about at the moment. 
 -/
 
+/-
+There are two members we always know are in the
+powerset of A: the emptyset and A itself. Of course,
+if A is the emptyset, this is technically only one
+member, but the proofs are the same.
+-/
+
+example: ∅ ∈ 𝒫 A :=
+begin
+  assume t,
+  assume pf_t_in_emptyset,
+  exact false.elim pf_t_in_emptyset
+end
+
+example: A ∈ 𝒫 A :=
+begin
+  assume t,
+  assume pf_t_in_A,
+  assumption
+end
 
 -- Tuples
 /-
