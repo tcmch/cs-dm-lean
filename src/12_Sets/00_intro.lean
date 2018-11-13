@@ -36,7 +36,8 @@ Type → Type. So, for example, set int is the
 type of sets with int-valued elements.
 
 Lean tells us that the set type constructor can 
-actually take a type in any type universe, i.e., Type (which is really Type 0), Type 1, Type 2,
+actually take a type in any type universe, i.e., 
+Type (which is really Type 0), Type 1, Type 2,
 etc. We needn't be concerned with that here.
 -/
 
@@ -545,6 +546,7 @@ as 1 ∈ x and as 2 ∈ x respectively.
 
 #reduce 1 ∈ x
 #reduce 2 ∈ x
+#reduce 3 ∈ z
 
 
 /-
@@ -753,7 +755,7 @@ left disjunct and right gives you
 everything else to the right of the 
 leftmost disjunct.
 -/
-assume a,
+intro a,
 intro h,
 cases h,
 right,
