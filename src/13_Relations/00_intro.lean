@@ -85,7 +85,9 @@ instead. You should read the definition as
 saying that if you give eq any type, you 
 get back a binary relation on values of 
 that type: namely one for which the only 
-proofs that can be constructed are given by eq.refl, which takes just one argument,α, and returns a proof of α = α.
+proofs that can be constructed are given
+by eq.refl, which takes just one argument,
+α, and returns a proof of α = α.
 
 We thus expect the type of "eq ℕ" to be 
 a binary relation on ℕ values. We preface eq in the following examples with @, which
