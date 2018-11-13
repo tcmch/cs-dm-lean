@@ -247,10 +247,10 @@ that the goal represents. You can use
 #reduce to see the proposition that the
 goal using set notation denotes. 
 -/
-change 1 = 1 ∨ false,
--- the rest is straightforward
-apply or.intro_left,
-exact rfl,
+  change 1 = 1 ∨ false,
+  -- the rest is straightforward
+  apply or.intro_left,
+  exact rfl,
 end
 
 
@@ -264,11 +264,11 @@ quick work of some proof goals.
 example : 1 ∈ x :=
 -- 1 = 1
 begin
-change 1 = 1 ∨ false,
+  change 1 = 1 ∨ false,
 -- now or.intro_left, but with a shortcut
-left,
+  left,
 -- and now exact rfl, but with a shortcut
-trivial,
+  trivial,
 end
 
 
@@ -423,14 +423,17 @@ def w := y ∩ z
 example : 2 ∈ y ∩ z :=
 -- (a = 3 ∨ a = 2 ∨ a = 1 ∨ false) ∧ (a = 4 ∨ a = 3 ∨ a = 2 ∨ false)
 begin
-apply and.intro,
-right,
-left,
-trivial,
-right,
-right,
-left,
-trivial,
+  apply and.intro,
+    -- 2 ∈ y
+    right,
+    left,
+    trivial,
+
+    -- 2 ∈ z
+    right,
+    right,
+    left,
+    trivial,
 end
 
 
@@ -454,11 +457,12 @@ a set difference, y \ z?
 example : 1 ∈ y \ z :=
 begin
 -- apply and.intro,
-split,
-right,
-right,
-left,
-trivial,
+  split,
+    -- 1 ∈ y
+    right,
+    right,
+    left,
+    trivial,
 /-
 The goal looks funny, but think
 about what it means. It is the
@@ -475,8 +479,9 @@ the elements in the set, written
 as a disjunction, so use case
 analysis! 
 -/
-assume pf,
-cases pf,
+    -- 1 ∉ z
+    assume pf,
+    cases pf,
 /-
 Now we need a proof that 1 ≠ 4. The 
 dec_trivial tactic defined in the Lean's
@@ -496,22 +501,25 @@ eliminate the current case on grounds
 that it is based on contradictory
 assumptions (and thus can't happen).
 -/
-have h : 1 ≠ 4 := dec_trivial,
+      have h : 1 ≠ 4 := dec_trivial,
 /-
 The contradiction tactic looks for a
 explicit contradiction in the context
 and if it finds one, applies false.elim
 to finish proving the goal.
 -/
-contradiction,
-cases pf,
-have h : 1 ≠ 3 := dec_trivial,
-contradiction,
-cases pf,
-have h : 1 ≠ 2 := dec_trivial,
-contradiction,
-have f : false := pf,
-contradiction,
+      contradiction,
+
+      cases pf,
+        have h : 1 ≠ 3 := dec_trivial,
+        contradiction,
+
+        cases pf,
+          have h : 1 ≠ 2 := dec_trivial,
+          contradiction,
+
+          have f : false := pf,
+          contradiction,
 end
 
 
@@ -741,7 +749,7 @@ to the current goal. You cand find
 out what the exact proposition is
 using reduce, as we did above.
 -/
-change ∀ ⦃a : ℕ⦄, a = 1 ∨ false → a = 3 ∨ a = 2 ∨ a = 1 ∨ false,
+  change ∀ ⦃a : ℕ⦄, a = 1 ∨ false → a = 3 ∨ a = 2 ∨ a = 1 ∨ false,
 /-
 The rest is just an everyday proof.
 Note that we can quickly zero in on
@@ -753,14 +761,17 @@ left disjunct and right gives you
 everything else to the right of the 
 leftmost disjunct.
 -/
-assume a,
-intro h,
-cases h,
-right,
-right,
-left,
-assumption,
-contradiction,
+  assume a,
+  intro h,
+  cases h,
+  -- case a = 1
+    right,
+    right,
+    left,
+    assumption,
+  
+  -- case false
+    contradiction,
 end
 
 
@@ -817,10 +828,10 @@ of showing that ∀ e, e ∈ A ↔ e ∈ B.
 -- set equality
 example : A = B :=
 begin
-apply ext,
-intro x,
-apply iff.intro,
-intro,
+  apply ext,
+  intro x,
+  apply iff.intro,
+  intro,
 /-
 We can proceed no further here, as
 we have nothing to use to prove that
@@ -835,8 +846,7 @@ to prove.
 end
 
 /-
-Let's prove that { 1 } = { 1 }.
-Remember we defined x to be { 1 }.
+Let's prove that { 1, 2 } = { 2, 1 }.
 -/
 
 def p : set ℕ := { 1, 2 }
@@ -846,15 +856,15 @@ def q : set ℕ := { 2, 1 }
 
 theorem oo : p = q  := 
 begin
-apply ext,
-intro x,
-apply iff.intro,
+  apply ext,
+  intro x,
+  apply iff.intro,
 
--- forward direction
+  -- forward direction
 
-intro, 
--- remember that a is a disjunction
-cases a with first rest,
+  intro, 
+  -- remember that a is a disjunction
+  cases a with first rest,
 /-
 We introduce a new tactic: rewrite,
 written as rw h or rw ←h. When applied 
@@ -866,23 +876,23 @@ side, y. If you want to rewrite by
 replacing occurrences of the right 
 side, y, with the left, x, use rw ←h.
 -/
-rw first,
-right, left, apply rfl,
-cases rest,
-rw rest,
-apply or.inl, apply rfl, 
--- rest is now ((λ n, false) x) = false!
-apply false.elim rest,
+  rw first,
+  right, left, apply rfl,
+  cases rest,
+  rw rest,
+  apply or.inl, apply rfl, 
+  -- rest is now ((λ n, false) x) = false!
+  apply false.elim rest,
 
--- backward direction
-intro,
-cases a,
-rw a,
-apply or.inr, left, apply rfl,
-cases a, 
-rw a,
-left, apply rfl,
-apply false.elim a,
+  -- backward direction
+  intro,
+  cases a,
+  rw a,
+  apply or.inr, left, apply rfl,
+  cases a, 
+  rw a,
+  left, apply rfl,
+  apply false.elim a,
 end
 
 
@@ -943,7 +953,51 @@ begin
     exact or.inr pf_t_in_1,
 end
 
+-- {{1, 2}, {1, 3}, {2, 3}} is a subset of the powerset of {1, 2, 3}
+example: ({{1, 2}, {1, 3}, {2, 3}}: set (set nat)) ⊆ 𝒫 ({1, 2, 3}: set nat) :=
+begin
+  assume s,
+  assume pf_s_in_subset,
+  cases pf_s_in_subset with pf_s_is_2_3,
+    assume t,
+    assume pf_t_in_s,
+    cases pf_s_is_2_3 with pf_s_is_3,
+      cases pf_t_in_s with pf_t_is_3 pf_t_in_2,
+        exact or.inl pf_t_is_3,
 
+        apply or.inr,
+        cases pf_t_in_2 with pf_t_in_2 pf_t_in_emptyset,
+          exact or.inl pf_t_in_2,
+          exact false.elim pf_t_in_emptyset,
+
+  cases pf_s_in_subset with pf_s_is_1_3,
+    assume t,
+    assume pf_t_in_s,
+    cases pf_s_is_1_3 with pf_s_is_3,
+      cases pf_t_in_s with pf_t_is_3 pf_t_in_1,
+        exact or.inl pf_t_is_3,
+
+        apply or.inr,
+        apply or.inr,
+        assumption,
+
+  cases pf_s_in_subset with pf_s_is_1_2 pf_s_in_emptyset,
+    assume t,
+    assume pf_t_in_s,
+    cases pf_s_is_1_2 with pf_s_is_2,
+      cases pf_t_in_s with pf_t_is_2 pf_t_in_1,
+        apply or.inr,
+        exact or.inl pf_t_is_2,
+
+        apply or.inr,
+        apply or.inr,
+        assumption,
+      
+    exact false.elim pf_s_in_emptyset,
+
+end
+
+ 
 -- Tuples
 /-
 If S and T are types, then the product type
@@ -1063,6 +1117,40 @@ don't need to worry about this at this time.
 -/
 
 
+-- COMPLEMENT
+
+/-
+The complement of a set is the set of all
+values of the set's type that are not in that
+set.
+
+The complement is specified by the "-" sign
+-/
+
+#check -y
+#reduce -y
+#reduce 5 ∈ -y
+
+example: 5 ∈ -y :=
+begin
+  change 5 = 3 ∨ 5 = 2 ∨ 5 = 1 ∨ false → false,
+  assume pf_5_in_y,
+  cases pf_5_in_y with pf_5_eq_3 h,
+    have pf_5_ne_3: 5 ≠ 3 := dec_trivial,
+    contradiction,
+
+  cases h with pf_5_eq_3 h,
+    have pf_5_ne_2: 5 ≠ 2 := dec_trivial,
+    contradiction,
+
+  cases h with pf_5_eq_1 h,
+    have pf_5_ne_1: 5 ≠ 1 := dec_trivial,
+    contradiction,
+
+    assumption
+end
+
+
 -- INSERTION
 
 /-
@@ -1112,12 +1200,12 @@ A is a subset of A ∪ B
 -/
 example : ∀ T : Type, ∀ s t: set T, s ⊆ s ∪ t :=
 begin
-assume T s t x, 
-assume h : x ∈ s,
-show x ∈ s ∪ t, 
-change s x ∨ t x,
-change s x at h,
-from or.inl h
+  assume T s t x, 
+  assume h : x ∈ s,
+  show x ∈ s ∪ t, 
+  change s x ∨ t x,
+  change s x at h,
+  from or.inl h
 end
 
 /-
@@ -1125,10 +1213,10 @@ The empty set, ∅, is a subset of any set.
 -/
 example : ∀ T : Type, ∀ s: set T, ∅ ⊆ s :=
 begin
-assume T s x,
-assume h : x ∈ (∅ : set T),
-have f: false := h,
-contradiction,
+  assume T s x,
+  assume h : x ∈ (∅ : set T),
+  have f: false := h,
+  contradiction,
 end
 
 /-
@@ -1155,11 +1243,11 @@ example :
 ∀ T : Type, forall A B : set T, 
 ∀ x, x ∈ A → x ∈ B → x ∈ A ∩ B :=
 begin
-assume T A B x,
-assume hA : x ∈ A,
-assume hB : x ∈ B,
-show x ∈ A ∧ x ∈ B, from
-and.intro hA hB,
+  assume T A B x,
+  assume hA : x ∈ A,
+  assume hB : x ∈ B,
+  show x ∈ A ∧ x ∈ B, from
+  and.intro hA hB,
 end
 
 
@@ -1171,10 +1259,10 @@ example :
 ∀ T : Type, forall A B : set T, 
 ∀ x, x ∈ A ∨ x ∈ B → x ∈ A ∪ B :=
 begin
-assume T A B x,
-intro dis,
-show x ∈ A ∨ x ∈ B,
-by assumption,
+  assume T A B x,
+  intro dis,
+  show x ∈ A ∨ x ∈ B,
+  by assumption,
 end
 
 /-
@@ -1182,10 +1270,10 @@ A minus B is a subset of A
 -/
 example : A \ B ⊆ A :=
 begin
-assume x,
-assume mem : x ∈ A \ B,
-cases mem, 
-from mem_left,
+  assume x,
+  assume mem : x ∈ A \ B,
+  cases mem, 
+  from mem_left,
 end
 
 /-
@@ -1193,11 +1281,11 @@ A minus B is contained in the complement of B
 -/
 example : A \ B ⊆ -B :=
 begin
-assume x,
-assume mem : x ∈ A \ B,
-change x ∈ A ∧ ¬ x ∈ B at mem,
-change x ∉ B,
-exact mem.right,
+  assume x,
+  assume mem : x ∈ A \ B,
+  change x ∈ A ∧ ¬ x ∈ B at mem,
+  change x ∉ B,
+  exact mem.right,
 end
 
 
@@ -1207,13 +1295,13 @@ of A with the complement of B.
 -/
 example : A \ B = A ∩ -B :=
 begin
-apply ext,
-intro,
-split,
-intro h,
-exact h,
-intro h,
-exact h,
+  apply ext,
+  intro,
+  split,
+  intro h,
+  exact h,
+  intro h,
+  exact h,
 end
 
 end sets
