@@ -286,58 +286,24 @@ end
 
 
 /-
-SKIP THE FOLLOWING. NOT YET WELL
-THOUGHT OUT.
+In the rest of this file, we transition
+from x R y notation to x ≺ y. You will 
+find both used in mathematical writing.
+Be careful not to read x ≺ y as saying
+that x is less than y. The ≺ symbol in
+this context can refer to any relation
+whatsoever.
 -/
-def cong_k: ℕ → ℕ → ℕ → Prop := 
-    λ k n m : ℕ, 
-        0 < k → n % k = m % k
 
 /-
-The proposition that results from 
-the application of cong_k to k, n, 
-and m, asserts that if 0 < k, then
-n % k = m % k. We include 0 < k, as
-the modulo-k function isn't defined
-when k = 0. This predicate is thus
-is trivially satisfied if k = 0, as
-the following example shows. 
+We now define additional properties of
+binary relations on a set. For each of
+them, come up with one or more familiar
+relations having these, and not having
+these, properties.
 -/
-example : cong_k 0 7 10 :=
-begin
-unfold cong_k,
-assume h,
-/-
-At this point we see that we've got
-a contradiction. The way we get to 
-the point where we can use false elim
-to polish off this proof is to get
-ourselves a proof of ¬ 0 < 0. For 
-this, we use a result available in
-the Lean libraries, which, for any n,
-returns a proof that ¬ n < 0. Then we
-are done.
--/
-have c := nat.not_lt_zero 0,
-contradiction, 
-end
-
-
-/-
-SULLIVAN: STOPPED HERE. NEED TO 
-EXPAND, EXPLAIN, BELOW. MAYBE ADD
-ASSYMETRIC. NEED TO INTRODUCE WHOLE
-TOPIC OF ORDERINGS.
--/
-
-
 
 def total := ∀ x y, x ≺ y ∨ y ≺ x
-
-/-
-def mk_equivalence (rfl : reflexive r) (symm : symmetric r) (trans : transitive r) : equivalence r :=
-⟨rfl, symm, trans⟩
--/
 
 def irreflexive := ∀ x, ¬ x ≺ x
 
@@ -349,6 +315,23 @@ def empty_relation := λ a₁ a₂ : α, false
 
 def subrelation (q r : β → β → Prop) := ∀ ⦃x y⦄, q x y → r x y
 
+/-
+Transitive closure. We're not ready for the
+following formal definition of the transitive
+closure of a relation, as we haven't covered 
+inductive definitions, but we can introduce
+the idea informally now.
+-/
+inductive tc {α : Type} (r : α → α → Prop) : α → α → Prop
+| base  : ∀ a b, r a b → tc a b
+| trans : ∀ a b c, tc a b → tc b c → tc a c
+
+
+/-
+The following material is optional and will not be
+tested.
+-/
+
 def inv_image (f : α → β) : α → α → Prop :=
 λ a₁ a₂, f a₁ ≺ f a₂
 
@@ -357,10 +340,6 @@ lemma inv_image.trans (f : α → β) (h : transitive r) : transitive (inv_image
 
 lemma inv_image.irreflexive (f : α → β) (h : irreflexive r) : irreflexive (inv_image r f) :=
 λ (a : α) (h₁ : inv_image r f a a), h (f a) h₁
-
-inductive tc {α : Type} (r : α → α → Prop) : α → α → Prop
-| base  : ∀ a b, r a b → tc a b
-| trans : ∀ a b c, tc a b → tc b c → tc a c
 
 end relation_2102_sec
 
