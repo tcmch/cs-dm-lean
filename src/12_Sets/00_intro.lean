@@ -890,7 +890,7 @@ side, y, with the left, x, use rw ←h.
   intro,
   cases a,
   rw a,
-  apply or.inr, left, apply rfl,
+  right, left, apply rfl,
   cases a, 
   rw a,
   left, apply rfl,
@@ -905,6 +905,7 @@ The powerset of a set, A, is the set of all
 of the subsets of A.
 -/
 
+#check A
 #check powerset A
 #check 𝒫 A
 #reduce 𝒫 A
@@ -930,35 +931,120 @@ if A is the emptyset, this is technically only one
 member, but the proofs are the same.
 -/
 
+#check A
+#check 𝒫 A
+#reduce 𝒫 A
+
+/-
+We define the powerset of A, itself a set,
+as, λ (t : T → Prop), ∀ ⦃a : T⦄, t a → A a.
+Let's analyze this. First, we note that it
+is a predicate, as we would expect, given
+that we use predicates to define sets. In 
+particular, this a predicate on values of
+type, T → Prop, which is to say, this is a
+predicate on predicates that define sets!
+It's a predicate that's true whenever its
+argument, a set defined by a predicate, is
+a subst of A, which is to say that it's true
+when any element in the argument (set) is 
+also in A. When applied to a set, t, this
+predicate is satisfied (true) if and only 
+if every a in t is also in A: formally,
+∀ ⦃a : T⦄, t a → A a.
+-/
+
+#reduce ∅ ∈ 𝒫 A
+
+/-
+Lean is helping us here. We need to 
+show that if a ∈ ∅ then a ∈ a to show
+that ∅ is a subset of A. But a ∈ ∅ is
+literally false. To see it, work through
+the application of the predicate for ∅ 
+to any value, a. Lean is simplifying
+a ∈ ∅ to false.
+-/
+
 example: ∅ ∈ 𝒫 A :=
+/-
+To show that the set, ∅, is in the set 𝒫 A, 
+we have to show that ∅ is a subset of A. To
+do that, we have to show that any t that is 
+in ∅ is also in A.
+-/
 begin
-  assume t,
-  assume pf_t_in_emptyset,
-  exact false.elim pf_t_in_emptyset
+  -- change goal to logical form
+  change ∀ ⦃a : T⦄, false → A a,
+  -- use forall introduction
+  intro t,
+  -- now it's a trivial proof
+  assume t_in_emptyset,
+  contradiction,
 end
+
+#reduce A ∈ 𝒫 A
+
+/-
+To prove this, we need to prove that A
+is subset of A, which is to say any a in
+A is also in A. It's as simple as that and
+the proof is of course trivial.
+-/
 
 example: A ∈ 𝒫 A :=
 begin
+  change ∀ ⦃a : T⦄, A a → A a,
   assume t,
-  assume pf_t_in_A,
+  assume t_in_A,
   assumption
 end
 
+/-
+Slightly more interesting cases are also
+easy to prove. There's nothing involved 
+here beyond what you already understand.
+-/
+#reduce ({1, 3}: set ℕ) ∈ 𝒫 ({1, 2, 3}: set ℕ)
+
+/-
+One again to prove that {1, 3} is in the power
+set of {1, 2, 3} it suffices to show that every
+element of {1, 3} is in {1, 2, 3}, because that
+is what it means to be a subset. The proof is
+straightforward.
+-/
+
 example: ({1, 3}: set ℕ) ∈ 𝒫 ({1, 2, 3}: set ℕ) :=
 begin
-  assume t,
+  change ∀ ⦃a : ℕ⦄, a = 3 ∨ a = 1 ∨ false → a = 3 ∨ a = 2 ∨ a = 1 ∨ false,
+  -- forall introduction
+  intro t,
+  -- assume premise of implication to be proved
   assume pf_t_in_1_3,
+  -- use or elimination on proof of premise
   cases pf_t_in_1_3 with pf_t_is_3 pf_t_in_1 ,
+    -- show 3 from {1, 3} is in {1, 2, 3}
     exact or.inl pf_t_is_3,
-
+    -- show 1 from {1, 3} is in {1, 2, 3}
     apply or.inr,
+    -- an ever so slightly clever or intro
     exact or.inr pf_t_in_1,
 end
 
--- {{1, 2}, {1, 3}, {2, 3}} is a subset of the powerset of {1, 2, 3}
-example: ({{1, 2}, {1, 3}, {2, 3}}: set (set nat)) ⊆ 𝒫 ({1, 2, 3}: set nat) :=
+-- a more involved example; study this one
+-- {{1, 2}, {1, 3}, {2, 3}} ⊆ 𝒫 {1, 2, 3}
+
+#reduce ({{1, 2}, {1, 3}, {2, 3}}: set (set nat)) ⊆ 𝒫 ({1, 2, 3})
+
+example : 
+({{1, 2}, {1, 3}, {2, 3}}) ⊆ 𝒫 ({1, 2, 3} : set nat) :=
 begin
-  assume s,
+  change ∀ ⦃a : ℕ → Prop⦄,
+  (a = λ (b : ℕ), b = 3 ∨ b = 2 ∨ false) ∨
+    (a = λ (b : ℕ), b = 3 ∨ b = 1 ∨ false) ∨ (a = λ (b : ℕ), b = 2 ∨ b = 1 ∨ false) ∨ false →
+  ∀ ⦃a_1 : ℕ⦄, a a_1 → a_1 = 3 ∨ a_1 = 2 ∨ a_1 = 1 ∨ false,
+  intro s,
   assume pf_s_in_subset,
   cases pf_s_in_subset with pf_s_is_2_3,
     assume t,
@@ -1016,6 +1102,7 @@ a type, and the 2-tuple, or ordered pair,
 -/
 
 #check ℕ × ℕ 
+#check prod ℕ ℕ 
 #check (1, 2)
 
 /-
@@ -1040,7 +1127,9 @@ We can form 3- and larger tuples using nested
 you can see by studying the type of this term.
 -/
 
-#check ("Hello Lean", (10, 1))
+#check ("Hello Lean", (10, (tt,1)))
+
+#check ((0,0),(0,0))
 
 
 -- PRODUCT SET
@@ -1088,8 +1177,9 @@ ordered pairs. It's basically defined like
 this:
 -/
 
-def mysetprod (S T : Type) (s : set S) (t : set T) : set (S × T) :=
-{p : prod S T | p.1 ∈ s ∧ p.2 ∈ t}
+def mysetprod (S T : Type) 
+  (s : set S) (t : set T) : set (S × T) :=
+    { p : S × T | p.1 ∈ s ∧ p.2 ∈ t }
 
 /-
 What this says, then, is that the product set
@@ -1097,6 +1187,7 @@ of s (a set of S-type values) and t (a set of
 T-type values) is the set of pairs, p, each of
 type (prod S T), and each thus an ordered pair,
 p = (p.1, p.2), where p.1 ∈ s and p.2 ∈ t.
+Lean provides this function as set.prod. 
 -/
 
 
@@ -1108,15 +1199,6 @@ change (λ (p : ℕ × ℕ),
   right,right,left,apply rfl,
   right,right,left,apply rfl,
 end
-
-/-
-Note: { x // A x } is basically the same as 
-{ x | A x }. These are technically called  
-subset types, the values of which are basically
-⟨ value, proof ⟩ pairs: a value along with a 
-proof that it satisfies the set predicate. You
-don't need to worry about this at this time.
--/
 
 
 -- COMPLEMENT
@@ -1185,7 +1267,7 @@ that 5 is also a member of the result set.
 #reduce insert 5 { 1, 2, 3, 4 }
 
 
--- EXAMPLES
+-- MORE EXAMPLES
 
 /-
 Several of these examples are adapted
@@ -1194,7 +1276,8 @@ Proof. Prof. Avigad (CMU) is one of the
 main contributors to the development of
 Lean, and he leads the development of 
 its mathematical libraries, including
-the one you're now using for sets.
+the one you're now using for sets, in
+particular.
 -/
 
 /-
