@@ -351,12 +351,48 @@ begin
 end
 
 /-
-Transitive closure. We're not ready for the
-following formal definition of the transitive
-closure of a relation, as we haven't covered 
-inductive definitions, but we can introduce
-the idea informally now.
+Let us define a relation R as R1
+For example imagine the relation “is one or two less than”
+as defined over the naturals.
+It contains the 2-tuples {(0, 1), (0, 2), (1, 2), (1, 3),
+ (2, 3), (2, 4), (3, 4), (3, 5), etc.}
+
+Now let us define R2 (or R ◦ R) as the relation having
+left-hand elements equal to the left-hand elements of the
+tuples in R1, and right-hand elements equal to the
+corresponding right-hand elements of the right-hand elements
+in R1
+E.g., from above this would be “is two, three, or four
+less than”
+It contains the 2-tuples {(0, 2), (0, 3), (0, 4), (1, 3),
+ (1, 4), (1, 5), etc.)
+
+R3 (or R ◦ R2) is the relation having left-hand elements
+having left-hand elements equal to the left-hand elements
+of the tuples in R1, and right-hand elements equal to the
+corresponding right-hand elements of the right-hand
+elements in R2
+E.g., from the above this would be “is three, four, or
+five less than”
 -/
+
+def successor: (β → β → Prop) → (β → β → Prop) :=
+begin
+  assume r,
+  exact λ(x y: β), ∃(b: β), (r x b) ∧ (r b y)
+end
+
+/-
+Transitive closure. 
+Transitive closure is the union of R and all
+of its successor relations
+
+We're not ready for the following formal definition
+of the transitive closure of a relation, as we
+haven't covered inductive definitions, but we can
+introduce the idea informally now.
+-/
+
 inductive tc {α : Type} (r : α → α → Prop) : α → α → Prop
 | base  : ∀ a b, r a b → tc a b
 | trans : ∀ a b c, tc a b → tc b c → tc a c
