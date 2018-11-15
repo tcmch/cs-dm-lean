@@ -219,7 +219,7 @@ formalize and prove this proposition.
 
 
 /-
-First, the proposition itself.
+First, the relation itself.
 -/
 def mod_12_equiv : ℕ → ℕ → Prop :=
     λ x y, x % 12 = y % 12
@@ -244,43 +244,39 @@ example :
 begin
 intros,
 unfold mod_12_equiv,
+-- The simp tactic uses many rules to simplify expressions,
+-- and can prove them true when trivial would do so
 simp,
 end
 
 /-
-Let's define what it means in general
-for two numbers to be congruent mod 12.
-We now see that congruence mod 12 is a
-binary relation.
+Let's show that mod_12_equiv is an equivalence
 -/
 
-def cong_12: ℕ → ℕ → Prop := 
-    λ n m : ℕ, n % 12 = m % 12
-
-example : reflexive cong_12 :=
+example : reflexive mod_12_equiv :=
 begin
-unfold cong_12,
+unfold mod_12_equiv,
 unfold reflexive, -- EX: why just x here?
 intro, apply rfl,
 end
 
-example : symmetric cong_12 :=
+example : symmetric mod_12_equiv :=
 begin
 unfold symmetric,
 intros x y,
-unfold cong_12,
+unfold mod_12_equiv,
 intro h,
 -- New tactic: rewrite using an equality
 rw h,
 end
 
-example : transitive cong_12 :=
+example : transitive mod_12_equiv :=
 begin
 unfold transitive,
 intros x y z xy yz,
-unfold cong_12 at xy,
-unfold cong_12 at yz,
-unfold cong_12,
+unfold mod_12_equiv at xy,
+unfold mod_12_equiv at yz,
+unfold mod_12_equiv,
 rw xy, assumption,
 end 
 
@@ -309,11 +305,50 @@ def irreflexive := ∀ x, ¬ x ≺ x
 
 def anti_symmetric := ∀ ⦃x y⦄, x ≺ y → y ≺ x → x = y
 
+def connected := ∀ x y, x ≠ y → x ≺ y ∨ y ≺ x
+
 variable {α : Type} 
 
 def empty_relation := λ a₁ a₂ : α, false
 
 def subrelation (q r : β → β → Prop) := ∀ ⦃x y⦄, q x y → r x y
+
+/-
+A relation is conceptually similar to a set of 2-tuples.
+However, the syntax is different.
+-/
+
+def mod_12_equiv': set (ℕ × ℕ) :=
+  {tuple | tuple.1 % 12 = tuple.2 % 12}
+
+/-
+This won't work:
+def mod_12_equiv'': set (ℕ × ℕ) :=
+  λ x y, x % 12 = y % 12
+-/
+
+#reduce ∃(n m: ℕ), (n, m) ∈ mod_12_equiv'
+
+example: ∀(n m: ℕ), mod_12_equiv n m ↔ (n, m) ∈ mod_12_equiv' :=
+begin
+  assume n m,
+  apply iff.intro,
+    unfold mod_12_equiv,
+    assume pf_mod_12_equiv,
+    unfold mod_12_equiv',
+    assumption,
+
+    unfold mod_12_equiv',
+    assume pf_mod_12_equiv',
+    unfold mod_12_equiv,
+    assumption
+end
+
+def set_of_tuples_to_relations: set (β × β) → (β → β → Prop) :=
+begin
+  assume s,
+  exact (λ x y, (x, y) ∈ s)
+end
 
 /-
 Transitive closure. We're not ready for the
