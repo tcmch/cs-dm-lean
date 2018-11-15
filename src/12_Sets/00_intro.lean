@@ -53,7 +53,7 @@ the set and not true otherwise.
 -/
 
 #check set nat
-#reduce set nat
+#reduce set ℕ
 
 -- Example: the empty set of ℕ 
 
@@ -391,6 +391,8 @@ left,
 left,
 trivial,
 end
+
+#reduce 3 ∈ y ∪ z
 
 /-
 Or, if you prefer, make the goal
@@ -949,7 +951,7 @@ begin
   cases pf_t_in_1_3 with pf_t_is_3 pf_t_in_1 ,
     exact or.inl pf_t_is_3,
 
-    apply or.inr,
+    right,
     exact or.inr pf_t_in_1,
 end
 
@@ -1139,7 +1141,7 @@ begin
     have pf_5_ne_3: 5 ≠ 3 := dec_trivial,
     contradiction,
 
-  cases h with pf_5_eq_3 h,
+  cases h with pf_5_eq_2 h,
     have pf_5_ne_2: 5 ≠ 2 := dec_trivial,
     contradiction,
 
