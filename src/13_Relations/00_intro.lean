@@ -1,13 +1,75 @@
 namespace relation_2102_ns
-section relation_2102_sec
 
 /-
-Let β be an arbitrary type, and r be
-a binary relation on elements of type,
-β. 
+We're now going to formally explain
+what a "section" is for in Lean. A 
+section allows you to specify in one
+place a set of parameters that are then
+assumed to be arguments to every other
+definition in the section.  Here's a
+very short little section to illustrate
+the concept. Don't proceed until you
+understand why the #check is reporting
+the type of yo to be (ℕ → ℕ) → ℕ → ℕ,
+even though it (looks like) it is
+defined as yo (n : ℕ) := f n, with 
+just one argument.
+-/
+
+section demo
+variable f : ℕ → ℕ 
+def yo (n : ℕ) := f n
+#check yo
+end demo
+
+/-
+The use of sections can make for
+cleaner code, because you don't have
+to repeat variable declarations in
+each object you define within a
+section. But if you don't understand
+that every variable in a section is
+an implicit parameter to every other
+definition in the section, then you
+will be mystified when it comes to
+understanding those definitions. 
+-/
+
+/-
+Now we turn to the main content of
+this unit: the theory of relations.
+-/
+section relation_2102_sec
+/-
+Here we use a section to define two
+arguments that are assumed to be present
+in each definition in the rest of this 
+file. 
+
+First, we let β be any type.
 -/
 variable {β : Type} 
+
+/-
+Here's the key to this unit. We let
+r represent a binary relation on values
+of type β. Whereas we represent a set
+of values of type β, or a property of
+such values, as a predicate of type,
+β → Prop, we represent in a binary
+relation, or a set of pairs, of values
+of type, β, as a predicate of type,
+β → β → Prop. 
+-/
 variable (r : β → β → Prop)
+
+/-
+So now, when you look at the definitions 
+in the rest of this file, you understand 
+that each one of them has two additional 
+arguments, namely β and r. 
+-/
+
 
 /-
 Applying r to two values, x and y, of
@@ -90,8 +152,11 @@ by eq.refl, which takes just one argument,
 α, and returns a proof of α = α.
 
 We thus expect the type of "eq ℕ" to be 
-a binary relation on ℕ values. We preface eq in the following examples with @, which
-tells Lean not to use implicit typing for the type argument, α, to eq. We really do have to give a type argument explicitly.
+a binary relation on ℕ values. We preface 
+eq in the following examples with @, which
+tells Lean not to use implicit typing for 
+the type argument, α, to eq. We really do 
+have to give a type argument explicitly.
 -/
 
 #check @eq nat 
@@ -99,7 +164,9 @@ tells Lean not to use implicit typing for the type argument, α, to eq. We reall
 
 /-
 We now see that for any type, α, such as 
-ℕ, or, in this file, β, eq α is a binary relation on the set of values of type, α. It is thus of type, α → α → Prop. That is
+ℕ, or, in this file, β, eq α is a binary 
+relation on the set of values of type, α. 
+It is thus of type, α → α → Prop. That is
 the signal that you're looking at a binary
 relation in Lean.
 -/
@@ -107,13 +174,25 @@ relation in Lean.
 -- REFLEXIVE
 
 /-
-Given that we now see that eq β is a binary relation, let's assert and prove
-that it is a reflexive relation.
+A relation is said to be reflexive if
+every element in the domain of definition
+of the relation (the set on which it is
+defined) is related to itself.
+-/
 
-EXERCISE: Think about and discuss 
-what it means for equality to be a
-reflexive relation. Do you believe
-it is reflexive?
+def reflexive := ∀ ⦃x⦄, x R x
+
+#check reflexive
+#reduce reflexive
+
+#check reflexive (@eq β)
+#reduce reflexive (@eq β)
+
+/-
+We know that eq β is a binary 
+relation defined on the set of
+values of type, β. Let's assert 
+and prove it.
 -/
 
 lemma eq_refl : reflexive (@eq β) :=
@@ -121,6 +200,13 @@ begin
 unfold reflexive,
 intro, apply rfl,
 end
+
+/-
+Let's take just a minute to unpack
+the proposition, reflexive (@eq β).
+You have to remember that at this
+point in the file, we've already
+-/
 
 
 -- SYMMETRIC
