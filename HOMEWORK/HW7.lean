@@ -1,0 +1,226 @@
+/-
+Homework #7. Proper subset. 
+-/
+
+/-
+We have studied the subset relation on
+sets. A set x is said to be a subset of
+y if ∀ e, e ∈ x → e in y. 
+
+By contrast, we say that x is a *proper* 
+subset of y if x is a subset of y and 
+there is some f in y that is not in x.
+Here's a formal definition of this binary
+relation on sets.
+-/
+
+def proper_subset : 
+  ∀ { α : Type }, 
+    set α → set α → Prop :=
+  λ α x y, forall (e : α), 
+    (e ∈ x → e ∈ y) ∧ (∃ f, f ∈ y ∧ f ∉ x) 
+
+/-
+Your homework, should you choose to 
+complete it (in preparation for the
+postponed quiz), is to use "example" 
+to assert and prove the proposition
+that { 1, 3 } is a proper subset of 
+the odd numbers. You will use set 
+comprehension notation to write this 
+proposition:
+
+proper_subset { 1, 3, } { . | ... } 
+-/
+
+
+/-
+We will introduce some new concepts
+to help you through this proof. The
+first has to do with the direction
+of rewriting, the second explains
+what the cases tactic actually does
+and shows how it can then be used to 
+do false elimination on hypotheses
+that assert incorrect equalities.
+
+We will also remind you about how
+to deal with an assumption of the
+form, e ∈ ∅, which is obviously a
+contradiction. 
+-/
+
+/--/
+First, a note on the rewrite tactic.
+
+Using "rewrite e" rewrites occurences,
+in the goal,  of the left hand side 
+of an equality, e: x = y, as the right 
+side. That is, it changes each x in 
+the goal into a y. Click through the
+following trivial proof in your tactic
+state window to see the idea in action.
+-/
+
+example : 
+  ∀ a b c : ℕ, a = b → b = c → a = c  
+:=
+begin
+intros a b c,
+assume ab bc,
+rewrite ab,
+rw bc, -- shorthand
+-- and rw does rfl for us
+end
+
+/-
+If you want the rewriting to go in 
+the other direction, use "rw ←e"
+-/
+
+example : 
+  ∀ a b c : ℕ, a = b → b = c → a = c  
+:=
+begin
+intros a b c,
+assume ab bc,
+rewrite ←bc,
+rw ←ab, 
+end
+
+
+/-
+Second, let's talk more about cases.
+
+Whenever we have any data value, it 
+must have been produced by one of the
+constructors defined for that type of
+data.
+
+With natural numbers, for example, a
+given ℕ must be either 0 (constructed
+by nat.zero) or 1 + a smaller natural
+number (constructed by nat.succ).
+
+So if we have some value, n : ℕ, 
+even though we don't know what its
+value is, we knowdo  there are only 
+two ways it could be been produced. 
+So, we want to prove something about 
+n, it suffices to prove that it is
+true no matter which of the two
+constructors was used to "build" n.
+Case analysis (and the cases tactic)
+replace an assume value with each 
+of the constructors that could
+have been used to build it. Click
+through the following proof to see
+how this plays out for a natural 
+number.
+-/
+
+example : ∀ n : ℕ, true :=
+begin
+assume n,
+cases n,  -- whoa, that's cool
+trivial,
+trivial,
+end
+
+/-
+The same idea holds for values that
+are proofs. Suppose we have a proof 
+of, say, a disjunction, P ∨ Q. There
+are only two ways that proof could
+have been built: by or.inl or or.inr.
+So when we use cases on a proof of a
+disjunction, even though we don't
+know exactly how it was proved, if
+we can prove our goal for each of
+the two ways in which it could have
+been built, then we've proved our 
+goal in either case.  
+-/
+
+example : ∀ P Q : Prop, P ∨ Q → true :=
+begin
+intros P Q,
+assume h,
+cases h, -- whoa, now I get it!
+trivial,
+trivial
+end
+
+/-
+Okay, so here's the cool thing. If you
+end up with an assumption, such as 2 = 3,
+in your context, which is to say a proof 
+of an equality, you can do case analysis
+on it. We've already seen that there is
+only one way to construct a proof of an 
+equality, using eq.refl applied to one 
+value. So if you have assumed a proof 
+of 2 = 3, when you do case analysis on 
+it, Lean will see that there are *zero* 
+constructors that could have been used
+to construct that proof. You thus have
+zero cases to prove and you're done. It
+is almost magic! But it's not. Having no 
+cases to prove is just false elimination 
+under a different guise.
+-/
+
+example : 4 = 5 → 0 = 1 :=
+begin
+assume four_equals_five,
+cases four_equals_five, --whoa!
+end
+
+/-
+Third if you have an assumption of 
+the form, h : e ∈ ∅, remember you 
+can use have f : false := h. That
+gets you what you need to be done. 
+
+Oh, and don't forget that e ∉ x is
+the same as ¬ (e ∈ x), and that of
+course is just (e ∈ x) → false. Or
+just try cases!
+
+And here are a few final hints. 
+
+(1) Remember that a set in Lean is 
+really represented as a membership
+predicate.
+
+(1A) When a set, such as { 1 , 3 }, 
+viewed as a membership predicate, 
+is applied to a value, it reduces 
+to a proposition in the form of a 
+disjunction. If you end up with an 
+assumption of the form e ∈ { 1, 3},
+treat it as proof of a disjunction.
+
+(1B) If you end up with a goal of 
+the form of a membership proposition,
+such as the following, for example,
+
+α ∈ {n : ℕ | ∃ (m : ℕ), n = m }
+
+think of it as the application of 
+the predicate/function defined by 
+the set, with argument, n, to α. 
+The overall expression reduces to 
+∃ (m : ℕ), α = m. You need to see
+this to know what inference rule 
+to use to prove such a goal.
+-/
+
+example : 
+proper_subset  
+  { 1, 3 } 
+  { n | ∃ m, n = 2 * m + 1 } 
+:=
+begin
+_
+end
