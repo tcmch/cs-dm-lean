@@ -26,26 +26,21 @@ complete it (in preparation for the
 postponed quiz), is to use "example" 
 to assert and prove the proposition
 that { 1, 3 } is a proper subset of 
-the odd numbers. You will use set 
-comprehension notation to write this 
-proposition:
-
-proper_subset { 1, 3, } { . | ... } 
+the odd numbers. 
 -/
 
 
 /-
-We will introduce some new concepts
+We now introduce some new concepts
 to help you through this proof. The
 first has to do with the direction
 of rewriting, the second explains
 what the cases tactic actually does
 and shows how it can then be used to 
 do false elimination on hypotheses
-that assert incorrect equalities.
-
-We will also remind you about how
-to deal with an assumption of the
+that assert incorrect equalities. We 
+will also remind you about how to 
+deal with an assumed proof of the
 form, e ∈ ∅, which is obviously a
 contradiction. 
 -/
@@ -53,13 +48,12 @@ contradiction.
 /--/
 First, a note on the rewrite tactic.
 
-Using "rewrite e" rewrites occurences,
-in the goal,  of the left hand side 
-of an equality, e: x = y, as the right 
-side. That is, it changes each x in 
-the goal into a y. Click through the
-following trivial proof in your tactic
-state window to see the idea in action.
+If e : x = y is an assumed proof of 
+x = y, then the tactic, "rewrite e" 
+rewrites each occurence of x in the
+goal with y. Click through the proof
+of the following trivial proposition
+to see the idea in action.
 -/
 
 example : 
@@ -70,7 +64,7 @@ intros a b c,
 assume ab bc,
 rewrite ab,
 rw bc, -- shorthand
--- and rw does rfl for us
+-- rw does "apply rfl" for us automatically
 end
 
 /-
@@ -92,31 +86,33 @@ end
 /-
 Second, let's talk more about cases.
 
-Whenever we have any data value, it 
-must have been produced by one of the
-constructors defined for that type of
-data.
+Whenever we have any data value, even
+if its a proof, it must have been built
+by one of the constructors defined for 
+that type of data.
 
 With natural numbers, for example, a
 given ℕ must be either 0 (constructed
 by nat.zero) or 1 + a smaller natural
-number (constructed by nat.succ).
+number (built by applying nat.succ to 
+the next smaller ℕ).
 
 So if we have some value, n : ℕ, 
 even though we don't know what its
-value is, we knowdo  there are only 
+value is, we do know there are only 
 two ways it could be been produced. 
-So, we want to prove something about 
-n, it suffices to prove that it is
-true no matter which of the two
-constructors was used to "build" n.
-Case analysis (and the cases tactic)
-replace an assume value with each 
-of the constructors that could
+So, if we want to prove something 
+about n, it suffices to show it is
+true no matter which constructor 
+was used to "build" n. Case analysis 
+(and the cases tactic) replaces an 
+assumed value in the context with
+each of the constructors that could
 have been used to build it. Click
 through the following proof to see
-how this plays out for a natural 
-number.
+how this plays out, not when we 
+apply cases to a disjunction, but 
+to a natural number.
 -/
 
 example : ∀ n : ℕ, true :=
@@ -137,9 +133,11 @@ So when we use cases on a proof of a
 disjunction, even though we don't
 know exactly how it was proved, if
 we can prove our goal for each of
-the two ways in which it could have
+the two ways in which it *could* have
 been built, then we've proved our 
-goal in either case.  
+goal in either case, as there are no
+other ways in which we could have had
+the value in the first place.
 -/
 
 example : ∀ P Q : Prop, P ∨ Q → true :=
@@ -154,18 +152,18 @@ end
 /-
 Okay, so here's the cool thing. If you
 end up with an assumption, such as 2 = 3,
-in your context, which is to say a proof 
-of an equality, you can do case analysis
-on it. We've already seen that there is
-only one way to construct a proof of an 
-equality, using eq.refl applied to one 
+in your context, which is to say a wrong
+proof of an equality, you can do case 
+analysis on it. We've already seen that 
+there is only one way to construct a proof 
+of an equality, using eq.refl applied to one 
 value. So if you have assumed a proof 
 of 2 = 3, when you do case analysis on 
-it, Lean will see that there are *zero* 
+it, Lean will see that there are *no*
 constructors that could have been used
 to construct that proof. You thus have
-zero cases to prove and you're done. It
-is almost magic! But it's not. Having no 
+zero cases to prove and you're done! It
+is almost magic. But it's not. Having no 
 cases to prove is just false elimination 
 under a different guise.
 -/
@@ -184,7 +182,7 @@ gets you what you need to be done.
 
 Oh, and don't forget that e ∉ x is
 the same as ¬ (e ∈ x), and that of
-course is just (e ∈ x) → false. Or
+course is just (e ∈ x) → false. Or,
 just try cases!
 
 And here are a few final hints. 
@@ -196,10 +194,11 @@ predicate.
 (1A) When a set, such as { 1 , 3 }, 
 viewed as a membership predicate, 
 is applied to a value, it reduces 
-to a proposition in the form of a 
-disjunction. If you end up with an 
-assumption of the form e ∈ { 1, 3},
-treat it as proof of a disjunction.
+to a proposition, here in the form 
+of a disjunction. So of you end up 
+with something like e ∈ { 1, 3 } as
+an  assumption, treat it as a proof 
+of a disjunction.
 
 (1B) If you end up with a goal of 
 the form of a membership proposition,
@@ -209,7 +208,7 @@ such as the following, for example,
 
 think of it as the application of 
 the predicate/function defined by 
-the set, with argument, n, to α. 
+the set, taking argument, n, to α. 
 The overall expression reduces to 
 ∃ (m : ℕ), α = m. You need to see
 this to know what inference rule 
