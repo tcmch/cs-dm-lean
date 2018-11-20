@@ -375,6 +375,8 @@ unfold mod_12_equiv,
 rw xy, assumption,
 end 
 
+/- ****** END OF PART I. -/
+
 
 /-
 In the rest of this file, we transition
