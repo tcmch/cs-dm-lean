@@ -1193,6 +1193,12 @@ p = (p.1, p.2), where p.1 ∈ s and p.2 ∈ t.
 Lean provides this function as set.prod. 
 -/
 
+/-
+The product set of {1, 2} and {2, 3}
+is {(1, 2), (1, 3), (2, 2), and (2, 3)}
+The product set of {2, 3} and {1, 2}
+is {(2, 1), (2, 2), (3, 1), and (3, 2)}
+-/
 
 example : (1, 2) ∈ set.prod y z := 
 begin
@@ -1323,6 +1329,14 @@ begin
     exact (tu z),
 end  
 
+variable α: Type
+variable sa: set α
+variable sb: set α
+variable ea: α
+
+#reduce ea ∈ sa
+#reduce ea ∈ sa ∩ sb
+
 /-
 If an object is in both sets A and B
 then it is in their intersection.
@@ -1334,6 +1348,7 @@ begin
   assume T A B x,
   assume hA : x ∈ A,
   assume hB : x ∈ B,
+  change x ∈ A ∧ x ∈ B,
   show x ∈ A ∧ x ∈ B, from
   and.intro hA hB,
 end
@@ -1349,6 +1364,7 @@ example :
 begin
   assume T A B x,
   intro dis,
+  change x ∈ A ∨ x ∈ B,
   show x ∈ A ∨ x ∈ B,
   by assumption,
 end
