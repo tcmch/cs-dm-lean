@@ -1,3 +1,8 @@
+import data.set
+import data.nat.sqrt
+
+open set
+
 namespace relation_2102_ns
 
 /-
@@ -206,6 +211,9 @@ Let's take just a minute to unpack
 the proposition, reflexive (@eq β).
 You have to remember that at this
 point in the file, we've already
+defined β and r as implicit args to
+all definitions, including that of
+eq_refl.
 -/
 
 
@@ -233,6 +241,7 @@ intros,
 apply eq.symm, 
 assumption,
 end
+
 
 /-
 EXERCISE: Is the real-world "likes" 
@@ -278,7 +287,7 @@ theorem eq_equiv : equivalence (@eq β) :=
 begin
 unfold equivalence,
 split, exact eq_refl,
-split, exact eq_symm, exact eq_trans
+split, exact eq_symm, exact eq_trans,
 end
 
 /-
@@ -385,23 +394,280 @@ relations having these, and not having
 these, properties.
 -/
 
-def total := ∀ x y, x ≺ y ∨ y ≺ x
+variable {α : Type} 
+
+def empty_relation := λ a₁ a₂ : α, false
 
 def irreflexive := ∀ x, ¬ x ≺ x
 
 def anti_symmetric := ∀ ⦃x y⦄, x ≺ y → y ≺ x → x = y
 
-def connected := ∀ x y, x ≠ y → x ≺ y ∨ y ≺ x
-
-variable {α : Type} 
-
-def empty_relation := λ a₁ a₂ : α, false
+def asymmetric := ∀ ⦃x y⦄, x ≺ y → ¬ y ≺ x 
 
 def subrelation (q r : β → β → Prop) := ∀ ⦃x y⦄, q x y → r x y
 
 /-
-A relation is conceptually similar to a set of 2-tuples.
-However, the syntax is different.
+Given a function expressed as a lambda
+abstraction, we can easily represent it
+as a corresponding relation.
+-/
+
+def fun_to_rel : 
+  (β → β) → (β → β → Prop) :=
+    λ f, 
+      λ m n, 
+        n = f m
+
+/-
+Let's look at the square function as
+an example. We've seen it many times.
+-/
+
+def square (n :ℕ) := n * n
+
+/-
+We can represent it as a relation.
+-/
+
+def square_rel := fun_to_rel square
+
+/-
+Viewed as a relation, square, and indeed 
+any function has a crucial property: that 
+of being single-valued. Given any argument,
+there is at most one result. Another way to
+say this is that if both x R y and x R z,
+then it must be that y = z (otherwise there
+would be two results for the argument x).
+-/
+
+def single_valued := 
+  ∀ x y z, (x ≺ y) → (x ≺ z) → (y = z)
+
+
+-- The square relation is single valued
+lemma sv_square_rel : 
+  single_valued square_rel :=
+begin
+  unfold single_valued, 
+  unfold square_rel,
+  unfold fun_to_rel,
+  intros x y z,
+  assume y z,
+  rw y, rw z,
+end
+
+
+/-
+Properties of functions.
+-/
+
+/-
+We now have two ways to represent
+functions: as lambda abstractions
+and as single-valued relations. 
+We can thus formulate properties
+of functions using either way of
+representing functions. Here we
+formulate these properties using
+the relational formulation.
+-/
+
+
+/-
+Injective.
+
+A function, here formalized as a
+single-valued relation, is said to 
+be injective if different arguments 
+always give different results. We
+express this by saying if x R z 
+and y R z then x = y,, otherwise
+different arguments would yield
+the same result. 
+-/
+
+def injective_rel := 
+  single_valued r → 
+    ∀ x y z, x R z → y R z → x = y 
+
+/-
+Mathematicians also call such a 
+function "one-to-one", as opposed
+to being many-to-one. A many-to-one
+function returns the same result for
+more than one argument value. 
+
+Carefully compare and contrast the
+concepts of being single-valued (which
+makes a relation into a function) and
+being injective (a property of some 
+but not all functions).
+-/
+
+
+
+/-
+We will now prove that the square relation
+is single-valued, and thus represents a
+function, and moreover that it is injective.
+
+We need a few building blocks to complete
+this proof, some of which represent basic
+proof-building maneuvers whether using a
+proof assistant or not. So let's get going.
+-/
+
+/-
+First, the square function, which we
+expressed as a lambda abstraction, is 
+single-valued.
+-/
+lemma sv_square: 
+  ∀ x y z : ℕ, 
+    y = square x → z = square x → y = z :=
+begin
+  intros x y z,
+  assume y z,
+  rw y, rw z,
+end
+
+/-
+Second, given any values, x and y, and
+a function, f, taking such values, it is
+clear that if x = y, then f x = f y. We
+will sometimes need to apply a function
+to both sides of an equation to change
+its form on the way to a proof. Proving
+this simple theorem will allow to rewrite
+equations by applying functions to both
+sides.
+-/
+
+theorem f_equal : 
+  ∀ { α : Type },
+  -- with x and y of some type, α 
+  ∀ { x y : α }, 
+  -- given a function, f
+  ∀ f: α → α, 
+  -- and an equality, x = y
+  x = y → 
+  -- derive the equality, f x = f y
+  f x = f y :=
+begin
+intros,
+rw a,
+end
+
+/-
+Third, the function that we're going
+to want to apply to both sides of an
+equation is the square root function
+for natural numbers. The Lean library
+provides this function as nat.sqrt.
+See the includes at the top of this
+file for inclusion of data.nat.sqrt.
+
+The key piece of knowledge is that the 
+Lean libraries also have a proof of the 
+following: Given a natural number, n, 
+one can derive a proof of sqrt(n*n) = n.
+
+sqrt_eq (n : ℕ) : sqrt (n*n) = n.
+
+We now use this fact to prove another
+lemma, namely that the square function
+is injective. That is, if x * x = y * y
+then x = y. 
+-/
+
+lemma square_inj : 
+  ∀ x y : ℕ, x * x = y * y → x = y :=
+begin
+intros x y,
+assume h,
+-- apply nat.sqrt to both sides of h
+have sqrt_both_sides := (f_equal nat.sqrt) h,
+-- now simplify sqrt (x * x) to x
+rw nat.sqrt_eq at sqrt_both_sides,
+-- and sqrt (y * y) to y
+rw nat.sqrt_eq at sqrt_both_sides,
+-- and that does it
+assumption,
+end
+
+
+/-
+And now we can show that the square
+relation, an alternative representation,
+is injective.
+-/
+example : injective_rel square_rel :=
+begin
+unfold square_rel,
+unfold fun_to_rel,
+unfold injective_rel,
+unfold single_valued,
+unfold square,
+assume sv,
+intros x y z,
+assume sqxz sqyz,
+rw sqxz at sqyz,
+have pf := square_inj x y sqyz,
+assumption,
+end
+
+def surjective_rel := single_valued r → ∀ y, ∃ x, x R y 
+
+/-
+Certainly the identity relation on the
+natural numbers is surjective.
+-/
+
+theorem id_nat_surj : surjective_rel (fun_to_rel (λ n : ℕ, n)) :=
+begin
+unfold surjective_rel,
+unfold single_valued,
+unfold fun_to_rel,
+assume fn,
+intro y,
+apply exists.intro y,
+apply rfl,
+end
+
+/-
+Finally a function is said to be
+bijective if it is both injective
+and surjective.
+-/
+def bijective_rel :=  injective_rel r ∧ surjective_rel r
+
+/-
+The identity function is bijective.
+-/
+
+theorem id_nat_bij : 
+  bijective_rel 
+    (fun_to_rel (λ n : ℕ, n)) :=
+begin
+unfold bijective_rel,
+unfold injective_rel,
+unfold fun_to_rel,
+unfold single_valued,
+split,
+assume fn,
+intros x y z,
+assume zx zy,
+rw <-zx,
+rw <-zy,
+apply id_nat_surj,
+end
+
+
+/-
+A relation is conceptually similar to a 
+set of 2-tuples. However, the syntax is 
+different.
 -/
 
 def mod_12_equiv': set (ℕ × ℕ) :=
@@ -413,59 +679,131 @@ def mod_12_equiv'': set (ℕ × ℕ) :=
   λ x y, x % 12 = y % 12
 -/
 
-#reduce ∃(n m: ℕ), (n, m) ∈ mod_12_equiv'
+--#reduce ∃(n m: ℕ), (n, m) ∈ mod_12_equiv'
 
-example: ∀(n m: ℕ), mod_12_equiv n m ↔ (n, m) ∈ mod_12_equiv' :=
+example: 
+  ∀(n m: ℕ), 
+    mod_12_equiv n m ↔ (n, m) ∈ mod_12_equiv' 
+:=
 begin
   assume n m,
   apply iff.intro,
+
     unfold mod_12_equiv,
     assume pf_mod_12_equiv,
     unfold mod_12_equiv',
+    change n % 12 = m % 12,
     assumption,
 
     unfold mod_12_equiv',
     assume pf_mod_12_equiv',
     unfold mod_12_equiv,
-    assumption
+    change n % 12 = m % 12 at pf_mod_12_equiv',
+    assumption,
+
 end
 
-def set_of_tuples_to_relations: set (β × β) → (β → β → Prop) :=
+
+/-
+Our intuition is that a set of
+tuples can be converted into a 
+binary relation and vice versa.
+Let's see if we can write two
+functions to do such conversions.
+If we get the functions right,
+then we should be able to show
+that if you convert one way and
+then back, you get right back to
+where you started. Proving such
+a theorem about our functions 
+would be a very powerful test
+that we got them right -- without
+ever even having to run them!
+-/
+def set_of_tuples_to_relation: 
+  set (β × β) → (β → β → Prop) 
+:=
 begin
   assume s,
-  exact (λ x y, (x, y) ∈ s)
+  exact (λ x y, (x, y) ∈ s),
+end
+
+def relation_to_set_of_tuples: 
+  (β → β → Prop) → set (β × β)
+:=
+  λ r, { p : β × β | r p.1 p.2 }
+
+example : ∀ s : set (β × β),
+  relation_to_set_of_tuples
+    (set_of_tuples_to_relation s) 
+      = s
+:=
+begin
+intro s,
+unfold relation_to_set_of_tuples,
+unfold set_of_tuples_to_relation,
+/-
+Looks complicated, and you could
+use set extensionality to take a
+next step, but it seems like this
+is mostly simplifying expressions,
+so let's ask Lean to try to help.
+-/
+simp,
+/-
+Nice! But now go back and make
+sure you see exactly why it's 
+true. An English language proof
+might say something like this.
+The set of the left is just the
+set of pairs of elements that are
+in s, and that's just s, so the
+equality holds, and we are done.
+-/
 end
 
 /-
 Let us define a relation R as R1
-For example imagine the relation “is one or two less than”
-as defined over the naturals.
-It contains the 2-tuples {(0, 1), (0, 2), (1, 2), (1, 3),
- (2, 3), (2, 4), (3, 4), (3, 5), etc.}
+For example imagine the relation 
+“is one or two less than” as 
+defined over the naturals. It 
+contains the 2-tuples {(0, 1), 
+(0, 2), (1, 2), (1, 3), (2, 3), 
+(2, 4), (3, 4), (3, 5), etc.}
 
-Now let us define R2 (or R ◦ R) as the relation having
-left-hand elements equal to the left-hand elements of the
-tuples in R1, and right-hand elements equal to the
-corresponding right-hand elements of the right-hand elements
-in R1
-E.g., from above this would be “is two, three, or four
-less than”
-It contains the 2-tuples {(0, 2), (0, 3), (0, 4), (1, 3),
- (1, 4), (1, 5), etc.)
+Now let us define R2 (or R ◦ R) 
+as the relation having left-hand 
+elements equal to the left-hand 
+elements of the tuples in R1, and 
+right-hand elements equal to the
+corresponding right-hand elements 
+of the right-hand elements in R1
+E.g., from above this would be 
+“is two, three, or four less than”
+It contains the 2-tuples {(0, 2), 
+(0, 3), (0, 4), (1, 3), (1, 4), 
+(1, 5), etc.)
 
-R3 (or R ◦ R2) is the relation having left-hand elements
-having left-hand elements equal to the left-hand elements
-of the tuples in R1, and right-hand elements equal to the
-corresponding right-hand elements of the right-hand
-elements in R2
-E.g., from the above this would be “is three, four, or
-five less than”
+R3 (or R ◦ R2) is the relation 
+having left-hand elements having 
+left-hand elements equal to the 
+left-hand elements of the tuples 
+in R1, and right-hand elements 
+equal to the corresponding 
+right-hand elements of the 
+right-hand elements in R2 E.g., 
+from the above this would be 
+“is three, four, or five less than”
 -/
 
-def successor: (β → β → Prop) → (β → β → Prop) :=
+/-
+
+-/
+def successor: 
+  (β → β → Prop) → (β → β → Prop) :=
 begin
   assume r,
-  exact λ(x y: β), ∃(b: β), (r x b) ∧ (r b y)
+  exact λ (x y: β), ∃(b: β), (r x b) ∧ (r b y)
 end
 
 /-
@@ -482,21 +820,6 @@ introduce the idea informally now.
 inductive tc {α : Type} (r : α → α → Prop) : α → α → Prop
 | base  : ∀ a b, r a b → tc a b
 | trans : ∀ a b c, tc a b → tc b c → tc a c
-
-
-/-
-The following material is optional and will not be
-tested.
--/
-
-def inv_image (f : α → β) : α → α → Prop :=
-λ a₁ a₂, f a₁ ≺ f a₂
-
-lemma inv_image.trans (f : α → β) (h : transitive r) : transitive (inv_image r f) :=
-λ (a₁ a₂ a₃ : α) (h₁ : inv_image r f a₁ a₂) (h₂ : inv_image r f a₂ a₃), h h₁ h₂
-
-lemma inv_image.irreflexive (f : α → β) (h : irreflexive r) : irreflexive (inv_image r f) :=
-λ (a : α) (h₁ : inv_image r f a a), h (f a) h₁
 
 end relation_2102_sec
 
