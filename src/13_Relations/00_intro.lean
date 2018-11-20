@@ -375,8 +375,6 @@ unfold mod_12_equiv,
 rw xy, assumption,
 end 
 
-/- ****** END OF PART I. -/
-
 
 /-
 In the rest of this file, we transition
@@ -408,17 +406,59 @@ def asymmetric := ∀ ⦃x y⦄, x ≺ y → ¬ y ≺ x
 
 def subrelation (q r : β → β → Prop) := ∀ ⦃x y⦄, q x y → r x y
 
+
+/- Closures of relations -/
+
+def reflexive_closure /- of r -/ :=
+  λ x y : β, (r x y) ∨ (x = y)
+
+def symmetric_closure /- of r -/ :=
+  λ x y : β, (r x y) ∨ (r y x)
+
 /-
-Given a function expressed as a lambda
-abstraction, we can easily represent it
-as a corresponding relation.
+We're not yet ready for the following 
+formal definition of the transitive 
+closure of a relation, as we haven't 
+covered inductive definitions, but we 
+can introduce the idea informally.
+Informally, it says that if there is
+any path from x to y in R then (x, y)
+is in the transitive closure of R.
 -/
 
-def fun_to_rel : 
-  (β → β) → (β → β → Prop) :=
-    λ f, 
-      λ m n, 
-        n = f m
+inductive tc {α : Type} (r : α → α → Prop) : α → α → Prop
+| base  : ∀ a b, r a b → tc a b
+| trans : ∀ a b c, tc a b → tc b c → tc a c
+
+/-
+EXAMPLE: What is the transitive closure
+of the successor relation on the natural 
+numbers?
+-/
+
+/- *** FUNCTIONS AND THEIR PROPERTIES *** -/
+
+/- The property of being single valued -/
+
+/-
+We define a critical property of every 
+function. Any function is single valued.
+Given any argument, there is at most one 
+result. Another way to say this is that 
+if y = f x and z = f x, then it must be
+the case that y = z, for otherwise there
+would be two different results possible
+for the value of f x.
+
+EXERCISE: Name a familiar operation that
+is not a function because it's not single
+valued.
+-/
+
+def single_valued_fun
+  (f : α → β) : Prop :=
+    ∀ x : α, ∀ y z : β, 
+      y = f x → z = f x → y = z
 
 /-
 Let's look at the square function as
@@ -428,77 +468,276 @@ an example. We've seen it many times.
 def square (n :ℕ) := n * n
 
 /-
-We can represent it as a relation.
+We can easily prove that square is
+single valued.
+-/
+
+lemma square_single_valued_fun : 
+  single_valued_fun square :=
+begin
+unfold single_valued_fun,
+intros x y z ysqx zsqx,
+rw ysqx, rw zsqx,
+end
+
+/-
+Indeed, we can prove that any function
+in Lean is single valued. And that is 
+not surprising, since the distinguishing
+feature of a function is that it has this
+property!
+-/
+
+theorem every_function_single_valued :
+  ∀ f : α → β, single_valued_fun f :=
+begin
+  intro f, 
+  unfold single_valued_fun,
+  intros x y z,
+  assume yfx zfx,
+  rw yfx, rw zfx,
+end
+
+/- A lambda represents a total function. -/
+
+/-
+A function is said to be total if it is
+defined, which is to say it has / returns
+a value for every argument value in its
+domain of definition. 
+
+In Lean, the domain of definition of a 
+function is a type. We've already seen
+that a function (value) of type α → β 
+defines a way to convert any value of
+type α into some value of type β. To
+"prove" the type α → β we have assume
+that we have some arbitary a : α and
+we construct and return a value of type
+β. Thus any lambda abstraction in Lean
+represents a total function: one that 
+is defined for every value of type α.  
+-/
+
+/- Encoding Functions as Relations -/
+
+/-
+Given any function expressed as a lambda
+abstraction, we can easily represent it
+as a corresponding relation. Here's a one
+line converter.
+-/
+
+def fun_to_rel (f : (β → β)): (β → β → Prop) :=
+  -- the relation is the set of pairs (m, f m)
+  λ m n, n = f m
+
+
+/-
+Here we convert square to a relation.
 -/
 
 def square_rel := fun_to_rel square
 
 /-
-Viewed as a relation, square, and indeed 
-any function has a crucial property: that 
-of being single-valued. Given any argument,
-there is at most one result. Another way to
-say this is that if both x R y and x R z,
-then it must be that y = z (otherwise there
-would be two results for the argument x).
+We can't "apply" a relation to an
+argument to compute a result. That
+is, we can't compute with relations.
 -/
 
-def single_valued := 
+-- We can compute with functions
+#reduce square 3
+
+-- This doesn't work with relations
+#reduce square_rel 3 -- not 9!
+
+/-
+But we can use logic prove that given
+pairs of values are in a relation.
+-/
+example : square_rel 3 9 :=
+begin
+unfold square_rel, 
+unfold fun_to_rel,
+apply rfl,
+end
+
+/-
+Why would we want to represent a 
+function as a relation? Giving up 
+the ability to compute seems like 
+(and is) a high cost. What do we 
+get for it? What we get for it is 
+the ability to represent partial 
+functions. A partial function is
+a function that is not necessarily 
+defined for every value in its 
+domain of definition. 
+-/
+
+/-
+The square function, for example,
+is defined for every value of type
+ℕ. Suppose we wanted to represent
+a partial function that is just
+like the square function but that
+is defined only for the values, 0,
+1, 2, and 3. Here's how we can do 
+it.
+-/
+
+def square_partial : ℕ → ℕ → Prop :=
+  λ m n,
+    (m = 0 ∧ n = 0) ∨
+    (m = 1 ∧ n = 1) ∨ 
+    (m = 2 ∧ n = 4) ∨ 
+    (m = 3 ∧ n = 9)
+
+/-
+To prove that the square_partial 
+relation represents a mathematical 
+function, we have to prove that 
+it's single valued. To this end,
+we give a definition of what it
+means for a relation to be single
+valued in general. Remember that
+this definition assumes that β is
+a type, that x, y, and z are of
+type β, and that ≺ is just infix
+notation for a relation, r : β → β. 
+-/
+
+def single_valued_rel := 
   ∀ x y z, (x ≺ y) → (x ≺ z) → (y = z)
 
 
--- The square relation is single valued
+/-
+Let's assert and prove that our
+partial square relation is actually 
+a function, i.e., is single valued.
+It is a strictly partial function,
+i.e., is a partial function and is
+not a total function.
+
+Note: some mathematicials consider
+the total functions to be a subset
+of the the partial functions (which
+is what we do here). Others consider
+these sets to be disjoint, i.e., that
+if a function is partial if and only
+if it is not total. We will use the 
+term "strictly partial" for that.
+-/
+
 lemma sv_square_rel : 
-  single_valued square_rel :=
+  single_valued_rel square_partial :=
 begin
-  unfold single_valued, 
-  unfold square_rel,
-  unfold fun_to_rel,
+  unfold single_valued_rel, 
+  unfold square_partial,
   intros x y z,
-  assume y z,
-  rw y, rw z,
+  assume h1 h2,
+
+  cases h1 with x0y resty, 
+  cases h2 with x0z restz,
+
+  cases x0y,
+  cases x0z,
+  rw x0y_right,
+  rw x0z_right,
+
+  cases x0y,
+  cases restz with x1z rest,
+  cases x1z,
+  -- we can rewrite hypotheses, too!
+  rw x0y_left at x1z_left,
+  contradiction,
+
+  -- the rest in the same tedious way
+  sorry
 end
 
+/-
+We can even prove that it's strictly
+partial by showing that there actually
+is a value on which it's not defined.
+Such a value is 4.
+-/
+
+lemma square_rel_strictly_partial :
+  ∃ m : ℕ, ¬ ∃ n : ℕ, square_partial m n :=
+begin
+apply exists.intro 4,
+unfold square_partial,
+assume h,
+-- We use cases in several ways here
+cases h with w rel,
+cases rel, cases rel, contradiction,
+cases rel, cases rel, cases rel_left,
+cases rel, cases rel, cases rel_left,
+cases rel, cases rel_left,
+end
 
 /-
 Properties of functions.
 -/
 
 /-
+In this section, we introduce 
+several more crucial properties 
+of functions, beyond the essential 
+property of being single valued.
+In particular, we introduce the
+concepts of injective functions,
+surjective functions, and bijective
+functions, which are both injective
+and surjective.
+-/ 
+
+/-
 We now have two ways to represent
 functions: as lambda abstractions
 and as single-valued relations. 
-We can thus formulate properties
-of functions using either way of
-representing functions. Here we
-formulate these properties using
-the relational formulation.
+In this section, to define these
+properties of functions in a way
+that is applicable to both total
+and partial functions, we formulate
+them using our representation of
+functions as single valued relations.
 -/
 
-
 /-
-Injective.
+The property of being injective.
 
-A function, here formalized as a
-single-valued relation, is said to 
-be injective if different arguments 
-always give different results. We
-express this by saying if x R z 
-and y R z then x = y,, otherwise
-different arguments would yield
-the same result. 
+A function is said to  be injective 
+if different arguments always give 
+different results. We express this 
+by saying if x R z and y R z then 
+x = y; otherwise different arguments 
+would yield the same result. 
 -/
 
 def injective_rel := 
-  single_valued r → 
+  single_valued_rel r → 
     ∀ x y z, x R z → y R z → x = y 
 
 /-
-Mathematicians also call such a 
-function "one-to-one", as opposed
-to being many-to-one. A many-to-one
-function returns the same result for
-more than one argument value. 
+Note that we make being single
+valued a "pre-condition" for being
+injective. The concept of being
+injective only applies to relations
+that are actually functions. 
+-/
+
+/-
+Mathematicians also use the phrase
+"one-to-one" to mean injective. This 
+term is in contrast to a many-to-one
+function, which can return the same 
+result for multiple argument values. 
+
+EXERCISE: Give examples of familiar
+functions that are injective and that
+are not injective.
 
 Carefully compare and contrast the
 concepts of being single-valued (which
@@ -508,42 +747,33 @@ but not all functions).
 -/
 
 
-
 /-
 We will now prove that the square relation
-is single-valued, and thus represents a
-function, and moreover that it is injective.
-
-We need a few building blocks to complete
-this proof, some of which represent basic
-proof-building maneuvers whether using a
-proof assistant or not. So let's get going.
+is single-valued thus represents a function
+and as such is injective. We need a few 
+building blocks to complete this proof. 
 -/
 
 /-
-First, the square function, which we
-expressed as a lambda abstraction, is 
-single-valued.
+First, we already proved that the square 
+function, expressed as a lambda abstraction, 
+is single-valued.
 -/
-lemma sv_square: 
-  ∀ x y z : ℕ, 
-    y = square x → z = square x → y = z :=
-begin
-  intros x y z,
-  assume y z,
-  rw y, rw z,
-end
+
+#check square_single_valued_fun
 
 /-
-Second, given any values, x and y, and
-a function, f, taking such values, it is
-clear that if x = y, then f x = f y. We
-will sometimes need to apply a function
-to both sides of an equation to change
-its form on the way to a proof. Proving
-this simple theorem will allow to rewrite
-equations by applying functions to both
-sides.
+Second, we can now formalize one of the
+key ideas you've seen throughout your
+mathematical career: given an equation,
+x = y, we can "do the same thing to both
+sides" and we will still have an equation.
+We formalize this idea by showing that
+if we have x = y, we can apply any 
+function, f, to each side, and we will
+still have an equation. We prove this
+as a general principle. The proof is
+by trivial rewriting.
 -/
 
 theorem f_equal : 
@@ -562,35 +792,60 @@ rw a,
 end
 
 /-
-Third, the function that we're going
-to want to apply to both sides of an
-equation is the square root function
-for natural numbers. The Lean library
-provides this function as nat.sqrt.
-See the includes at the top of this
-file for inclusion of data.nat.sqrt.
+Now, the function that we're 
+going to want to apply to both 
+sides of an equation to prove 
+that our square relation is an
+injective function is the square 
+root function for natural numbers. 
+The Lean library provides this 
+function as nat.sqrt. See the 
+includes at the top of this file 
+for inclusion of data.nat.sqrt.
 
-The key piece of knowledge is that the 
-Lean libraries also have a proof of the 
-following: Given a natural number, n, 
-one can derive a proof of sqrt(n*n) = n.
+To use proof assistants such as
+Lean or Coq in practice, at some
+point it becomes necessary to 
+learn what's in various libraries
+of already defined functions and
+proved results. 
 
-sqrt_eq (n : ℕ) : sqrt (n*n) = n.
+The key pieces of knowledge you
+need for now are that the library
+also has a proof of the following: 
+For any a natural number, n, there 
+is a proof of nat.sqrt (n * n) = n.
 
-We now use this fact to prove another
-lemma, namely that the square function
-is injective. That is, if x * x = y * y
+sqrt_eq (n : ℕ) : sqrt (n * n) = n.
+
+Here's an example of how we can 
+use f_equal and nat.sqrt together.
+-/
+
+-- introduce two variables to use
+variables s t : ℕ 
+-- assume s squared equals t squared
+variable s2t2 : s * s = t * t
+-- apply square root to both sides
+#check (f_equal nat.sqrt) s2t2
+
+
+/-
+With that library knowlege in hand, 
+we prove that the square function, 
+formalized as a lambda abstraction,
+is injective. Thus, if x * x = y * y
 then x = y. 
 -/
 
-lemma square_inj : 
-  ∀ x y : ℕ, x * x = y * y → x = y :=
+lemma square_injective : 
+  ∀ { x y : ℕ }, x * x = y * y → x = y :=
 begin
 intros x y,
 assume h,
 -- apply nat.sqrt to both sides of h
 have sqrt_both_sides := (f_equal nat.sqrt) h,
--- now simplify sqrt (x * x) to x
+-- use sqrt_eq to simplify sqrt (x * x) to x
 rw nat.sqrt_eq at sqrt_both_sides,
 -- and sqrt (y * y) to y
 rw nat.sqrt_eq at sqrt_both_sides,
@@ -601,36 +856,73 @@ end
 
 /-
 And now we can show that the square
-relation, an alternative representation,
+function represented as a relation 
 is injective.
 -/
 example : injective_rel square_rel :=
 begin
 unfold square_rel,
 unfold fun_to_rel,
-unfold injective_rel,
-unfold single_valued,
 unfold square,
+unfold injective_rel,
 assume sv,
+unfold single_valued_rel at sv,
 intros x y z,
 assume sqxz sqyz,
 rw sqxz at sqyz,
-have pf := square_inj x y sqyz,
+have pf := square_injective sqyz,
 assumption,
 end
 
-def surjective_rel := single_valued r → ∀ y, ∃ x, x R y 
+/-
+The property of being surjective.
+
+A function, f : α → β is said to be 
+surjective if it "covers" every value 
+in its co-domain, β. That is, it is
+surjective if for any value of type
+β there is some value of type α such
+that f α = β. 
+
+We formalize the concept of being a
+surjective function for a relational
+formulation of functions, so that the
+concept applies to partial functions
+as well as total functions. We make
+being single valued (being a function)
+a pre-condition. 
+-/
+
+def surjective_rel := 
+  single_valued_rel r → ∀ y, ∃ x, x R y 
+
+/-
+Exercise: Is the square function on 
+natural numbers, taking each natural
+number to its square, surjective? How
+would you prove that your answers is
+correct?
+-/
 
 /-
 Certainly the identity relation on the
-natural numbers is surjective.
+natural numbers, id_nat := λ n : ℕ, n,
+is surjective. To prove it, consider 
+an arbitrary y : ℕ and show that there
+exists and x such that id_nat x = y. 
+The witness is just y itself.
 -/
 
-theorem id_nat_surj : surjective_rel (fun_to_rel (λ n : ℕ, n)) :=
+def id_nat := (λ n : ℕ, n)
+
+def id_nat_rel := fun_to_rel id_nat
+
+theorem id_nat_surj : 
+  surjective_rel (id_nat_rel) :=
 begin
 unfold surjective_rel,
-unfold single_valued,
-unfold fun_to_rel,
+unfold single_valued_rel,
+unfold id_nat_rel,
 assume fn,
 intro y,
 apply exists.intro y,
@@ -638,39 +930,151 @@ apply rfl,
 end
 
 /-
+EXERCISE: Suppose that f is an encryption
+function. When applied to a plaintext, t,
+it yields a cyphertext, c. To decrypt the
+cyphertext, to recover the plaintext, one
+applies a decryption function, g, to c. 
+Should f injective? What if it weren't?
+-/
+
+
+/-
 Finally a function is said to be
 bijective if it is both injective
 and surjective.
 -/
-def bijective_rel :=  injective_rel r ∧ surjective_rel r
+def bijective_rel :=  
+  injective_rel r ∧ surjective_rel r
 
 /-
-The identity function is bijective.
+We've already proved that the
+identity function is surjective.
 -/
 
-theorem id_nat_bij : 
-  bijective_rel 
-    (fun_to_rel (λ n : ℕ, n)) :=
+/-
+We need to prove it's injective.
+-/
+
+lemma id_nat_inj : 
+  injective_rel id_nat_rel :=
 begin
-unfold bijective_rel,
-unfold injective_rel,
-unfold fun_to_rel,
-unfold single_valued,
-split,
-assume fn,
-intros x y z,
-assume zx zy,
-rw <-zx,
-rw <-zy,
-apply id_nat_surj,
+  unfold id_nat_rel,
+  unfold fun_to_rel,
+  unfold injective_rel,
+  unfold id_nat,
+  assume h,
+  intros x y z,
+  assume zidx zidy,
+  rw <-zidx,
+  rw <-zidy,
 end
 
+theorem id_nat_bij : 
+  bijective_rel id_nat_rel :=
+begin
+exact ⟨id_nat_inj, id_nat_surj⟩ 
+end
 
 /-
-A relation is conceptually similar to a 
-set of 2-tuples. However, the syntax is 
-different.
+Functions and Relations as Sets of Pairs
 -/
+
+/-
+We've already seen that we can represent
+a total function, f : β → β, as a relation,
+of type β → β → Prop, and that while we
+give up being able to compute we gain the
+ability to represent *partial* functions 
+in this form.
+
+What we show show briefly is that we can
+also convert back for betwen relations and
+sets of pairs. That means we can represent
+any function, whether total or not, as a
+set of pairs. This is, in fact, how most
+mathematicians think of functions, and how
+they are formalized in set theory. 
+-/
+
+/-
+Our intuition is that a set of
+tuples can be converted into a 
+binary relation and vice versa.
+Let's see if we can write two
+functions to do such conversions.
+If we get the functions right,
+then we should be able to show
+that if you convert one way and
+then back, you get right back to
+where you started. Proving such
+a theorem about our functions 
+would be a very powerful test
+that we got them right -- without
+ever even having to run them!
+-/
+
+/-
+A relation is just a predicate on
+two arguments. To convert a relation,
+here denoted by ≺, to a set, we use 
+set comprehension notation ro build 
+a the set of pairs that satisfy the 
+predicate defined by the relation. 
+-/
+def 
+relation_to_set_of_tuples: set (β × β) :=
+    { p : β × β | p.1 ≺ p.2 }
+
+/-
+Given a set of pairs, we can convert
+that to a relation, namely one that 
+is true for x and y iff (x, y) is in 
+the given set.
+-/
+def set_of_tuples_to_relation: 
+  set (β × β) → (β → β → Prop) 
+:=
+begin
+  assume s,
+  exact (λ x y, (x, y) ∈ s),
+end
+
+variable aSet : set (β × β)
+#check set_of_tuples_to_relation aSet
+#check relation_to_set_of_tuples(set_of_tuples_to_relation aSet)
+
+example : 
+∀ s : set (β × β),
+  relation_to_set_of_tuples
+    (set_of_tuples_to_relation s) 
+      = s
+:=
+begin
+intro s,
+unfold relation_to_set_of_tuples,
+unfold set_of_tuples_to_relation,
+/-
+Looks complicated, and you could
+use set extensionality to take a
+next step, but it seems like this
+is mostly simplifying expressions,
+so let's ask Lean to try to help.
+-/
+simp,
+/-
+Nice! But now go back and make
+sure you see exactly why it's 
+true. An English language proof
+might say something like this.
+The set of the left is just the
+set of pairs of elements that are
+in s, and that's just s, so the
+equality holds, and we are done.
+-/
+end
+
+/- SULLIVAN STOPPED HERE -/
 
 def mod_12_equiv': set (ℕ × ℕ) :=
   {tuple | tuple.1 % 12 = tuple.2 % 12}
@@ -705,64 +1109,6 @@ begin
 
 end
 
-
-/-
-Our intuition is that a set of
-tuples can be converted into a 
-binary relation and vice versa.
-Let's see if we can write two
-functions to do such conversions.
-If we get the functions right,
-then we should be able to show
-that if you convert one way and
-then back, you get right back to
-where you started. Proving such
-a theorem about our functions 
-would be a very powerful test
-that we got them right -- without
-ever even having to run them!
--/
-def set_of_tuples_to_relation: 
-  set (β × β) → (β → β → Prop) 
-:=
-begin
-  assume s,
-  exact (λ x y, (x, y) ∈ s),
-end
-
-def relation_to_set_of_tuples: 
-  (β → β → Prop) → set (β × β)
-:=
-  λ r, { p : β × β | r p.1 p.2 }
-
-example : ∀ s : set (β × β),
-  relation_to_set_of_tuples
-    (set_of_tuples_to_relation s) 
-      = s
-:=
-begin
-intro s,
-unfold relation_to_set_of_tuples,
-unfold set_of_tuples_to_relation,
-/-
-Looks complicated, and you could
-use set extensionality to take a
-next step, but it seems like this
-is mostly simplifying expressions,
-so let's ask Lean to try to help.
--/
-simp,
-/-
-Nice! But now go back and make
-sure you see exactly why it's 
-true. An English language proof
-might say something like this.
-The set of the left is just the
-set of pairs of elements that are
-in s, and that's just s, so the
-equality holds, and we are done.
--/
-end
 
 /-
 Let us define a relation R as R1
@@ -805,23 +1151,16 @@ def successor:
   (β → β → Prop) → (β → β → Prop) :=
 begin
   assume r,
-  exact λ (x y: β), ∃(b: β), (r x b) ∧ (r b y)
+  exact λ (x y: β), 
+    ∃(b: β), (x ≺ b) ∧ (b ≺ y)
 end
 
 /-
 Transitive closure. 
-Transitive closure is the union of R and all
-of its successor relations
 
-We're not ready for the following formal definition
-of the transitive closure of a relation, as we
-haven't covered inductive definitions, but we can
-introduce the idea informally now.
+The transitive closure of a relation, R, 
+is the union of R and all of its successor relations.
 -/
-
-inductive tc {α : Type} (r : α → α → Prop) : α → α → Prop
-| base  : ∀ a b, r a b → tc a b
-| trans : ∀ a b c, tc a b → tc b c → tc a c
 
 end relation_2102_sec
 
