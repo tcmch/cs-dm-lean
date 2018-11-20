@@ -242,7 +242,6 @@ apply eq.symm,
 assumption,
 end
 
-
 /-
 EXERCISE: Is the real-world "likes" 
 relation, as in "has-a-crush-on", a  symmetric relation? How about Facebook's 
@@ -796,15 +795,32 @@ from the above this would be
 “is three, four, or five less than”
 -/
 
-/-
-
--/
 def successor: 
   (β → β → Prop) → (β → β → Prop) :=
 begin
   assume r,
   exact λ (x y: β), ∃(b: β), (r x b) ∧ (r b y)
 end
+
+/-
+The following is a definition for composition of two
+arbitrary relations R1 and R2.
+-/
+
+def composition{α: Type} 
+  (R1: (α → α → Prop)) (R2: (α → α → Prop)): (α → α → Prop) :=
+    λ(x y: α), ∃(b: α), (R1 x b) ∧ (R2 b y)
+
+/-
+Let's now define the composition operator for relations: ◦
+-/
+
+local infix `◦`:50 := composition
+
+/-
+def is_one_or_two_less_than(x, y: ℕ): Prop :=
+  x + 1 = y ∨ x + 2 = y
+-/
 
 /-
 Transitive closure. 
