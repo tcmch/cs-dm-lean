@@ -244,7 +244,8 @@ end
 
 /-
 EXERCISE: Is the real-world "likes" 
-relation, as in "has-a-crush-on", a  symmetric relation? How about Facebook's 
+relation, as in "has-a-crush-on", a 
+symmetric relation? How about Facebook's 
 "likes" relation?
 -/
 
@@ -501,28 +502,29 @@ end
 
 /-
 A function is said to be total if it is
-defined, which is to say it has / returns
-a value, for every argument value in its
-domain of definition. 
+defined (which is to say it returns a
+value) for every argument in its domain 
+of definition. 
 
 In Lean, the domain of definition of a 
 function is a type. We've already seen
 that a function (value) of type α → β 
 defines a way to convert any value of
 type α into some value of type β. To
-"prove" the type α → β we have assume
-that we have some arbitary a : α and
-construct and return a value of type
-β. Thus any lambda abstraction in Lean
-represents a total function: one that 
-is defined for every value of type α.  
+"prove" the type α → β we assume that 
+we have some arbitary value, a : α, 
+and show that we can construct and 
+return a value of type β. Thus any 
+lambda abstraction in Lean represents 
+a *total* function: one that is defined 
+for *every* value of type α.  
 -/
 
-/- Encoding Functions as Relations -/
+/- *** Encoding Functions as Relations *** -/
 
 /-
 Given any function expressed as a lambda
-abstraction, we can easily represent it
+abstraction, we can easily re-represent it
 as a corresponding relation. Here's a one
 line converter.
 -/
@@ -533,7 +535,8 @@ def fun_to_rel (f : (β → β)): (β → β → Prop) :=
 
 
 /-
-Here we convert square to a relation.
+Here we convert the square functon to a 
+corresponding square relation.
 -/
 
 def square_rel := fun_to_rel square
@@ -560,6 +563,21 @@ unfold square_rel,
 unfold fun_to_rel,
 apply rfl,
 end
+
+
+/- Representing Partial Funtions! -/
+
+/-
+A partial function is a function that
+need not be defined for every value in
+its domain of definition. An example 
+of a partial function is the square
+root function where the domain of
+definition is the whole set of real
+numbers. The function is defined only
+on the non-negative subset of this 
+domain of definition.
+-/
 
 /-
 Why would we want to represent a 
@@ -591,6 +609,9 @@ def square_partial : ℕ → ℕ → Prop :=
     (m = 1 ∧ n = 1) ∨ 
     (m = 2 ∧ n = 4) ∨ 
     (m = 3 ∧ n = 9)
+
+
+/- Single-valued *relations* -/
 
 /-
 To prove that the square_partial 
@@ -677,7 +698,7 @@ cases rel, cases rel_left,
 end
 
 /-
-Properties of functions.
+*** Fundamental properties of functions ***
 -/
 
 /-
@@ -705,7 +726,7 @@ functions as single valued relations.
 -/
 
 /-
-The property of being injective.
+The property of being ***injective***.
 
 A function is said to  be injective 
 if different arguments always give 
@@ -747,10 +768,10 @@ but not all functions).
 
 
 /-
-We will now prove that the square relation
-is single-valued thus represents a function
-and as such is injective. We need a few 
-building blocks to complete this proof. 
+Extended Example: The square relation
+represents an injective function. We 
+need a few building blocks to complete 
+the proof of this proposition. 
 -/
 
 /-
@@ -762,17 +783,34 @@ is single-valued.
 #check square_single_valued_fun
 
 /-
-Second, we can now formalize one of the
-key ideas you've seen throughout your
-mathematical career: given an equation,
-x = y, we can "do the same thing to both
-sides" and we will still have an equation.
+The proposition to be proved is that if
+(x,z) and (y,z) are in the relation then
+x = y. That is what it means for a function
+to be injective. Now given that we are
+talking about the square relation, what
+it means for (x,z) and for (y,z) to be
+in the relation is that (x, x * x) and 
+(y, y * y) are in the relation and that
+x * x = y * y. Taking the square root of 
+both sides of this equation then leaves
+us with the conclusion that x = y, which
+is what was to be proved. QED.
+-/
+
+/-
+We now formalize one of the key ideas 
+you've seen throughout your mathematical 
+career: given an equation, such as x = y, 
+we can "do the same thing to both sides" 
+and still have an equation.
+
 We formalize this idea by showing that
 if we have x = y, we can apply any 
 function, f, to each side, and we will
-still have an equation. We prove this
-as a general principle. The proof is
-by trivial rewriting.
+still have an equation: that f x = f y. 
+
+We prove this as a general principle. The 
+proof is by trivial rewriting.
 -/
 
 theorem f_equal : 
@@ -797,30 +835,45 @@ sides of an equation to prove
 that our square relation is an
 injective function is the square 
 root function for natural numbers. 
+
 The Lean library provides this 
 function as nat.sqrt. See the 
 includes at the top of this file 
 for inclusion of data.nat.sqrt.
 
 To use proof assistants such as
-Lean or Coq in practice, at some
-point it becomes necessary to 
-learn what's in various libraries
-of already defined functions and
-proved results. 
+Lean or Coq, in practice, at some
+point it becomes necessary to learn 
+what's in tge libraries of already 
+defined data types, functions, 
+propositions, and proofs. 
 
-The key pieces of knowledge you
-need for now are that the library
-also has a proof of the following: 
-For any a natural number, n, there 
-is a proof of nat.sqrt (n * n) = n.
+The key piece of knowledge you
+need now is that the math library
+provides a proof of the following: 
+For any n : ℕ, there is a proof 
+that nat.sqrt (n * n) = n. Here
+is how it is declared. The point
+is we can and will need to use
+this already proven principle to
+finish our proof of the injectivity
+of the square relation.
 
 sqrt_eq (n : ℕ) : sqrt (n * n) = n.
 
-Here's an example of how we can 
-use f_equal and nat.sqrt together.
+In particular, we can use f_equal 
+and nat.sqrt together to "apply the
+square root function to each side
+of the equation, x * x = y * y,"" to
+deduce that x = y.
 -/
 
+
+/-
+Here's a tiny example to illustrate the
+basic idea. The statement of the theorem
+and its proof then follow.
+-/
 -- introduce two variables to use
 variables s t : ℕ 
 -- assume s squared equals t squared
@@ -829,21 +882,20 @@ variable s2t2 : s * s = t * t
 #check (f_equal nat.sqrt) s2t2
 
 
-/-
-With that library knowlege in hand, 
-we prove that the square function, 
-formalized as a lambda abstraction,
-is injective. Thus, if x * x = y * y
-then x = y. 
--/
 
 lemma square_injective : 
-  ∀ { x y : ℕ }, x * x = y * y → x = y :=
+  injective_rel square_rel :=
+--  ∀ { x y : ℕ }, x * x = y * y → x = y :=
 begin
-intros x y,
+unfold square_rel, unfold fun_to_rel,
+unfold injective_rel, unfold single_valued_rel,
+unfold square,
 assume h,
+intros x y z,
+assume h1 h2,
+rw h1 at h2,
 -- apply nat.sqrt to both sides of h
-have sqrt_both_sides := (f_equal nat.sqrt) h,
+have sqrt_both_sides := (f_equal nat.sqrt) h2,
 -- use sqrt_eq to simplify sqrt (x * x) to x
 rw nat.sqrt_eq at sqrt_both_sides,
 -- and sqrt (y * y) to y
@@ -852,26 +904,6 @@ rw nat.sqrt_eq at sqrt_both_sides,
 assumption,
 end
 
-
-/-
-And now we can show that the square
-function represented as a relation 
-is injective.
--/
-example : injective_rel square_rel :=
-begin
-unfold square_rel,
-unfold fun_to_rel,
-unfold square,
-unfold injective_rel,
-assume sv,
-unfold single_valued_rel at sv,
-intros x y z,
-assume sqxz sqyz,
-rw sqxz at sqyz,
-have pf := square_injective sqyz,
-assumption,
-end
 
 /-
 The property of being surjective.
