@@ -502,7 +502,7 @@ end
 /-
 A function is said to be total if it is
 defined, which is to say it has / returns
-a value for every argument value in its
+a value, for every argument value in its
 domain of definition. 
 
 In Lean, the domain of definition of a 
@@ -512,7 +512,7 @@ defines a way to convert any value of
 type α into some value of type β. To
 "prove" the type α → β we have assume
 that we have some arbitary a : α and
-we construct and return a value of type
+construct and return a value of type
 β. Thus any lambda abstraction in Lean
 represents a total function: one that 
 is defined for every value of type α.  
@@ -1043,7 +1043,14 @@ variable aSet : set (β × β)
 #check set_of_tuples_to_relation aSet
 #check relation_to_set_of_tuples(set_of_tuples_to_relation aSet)
 
-example : 
+
+/-
+Now comes a major test of our formalization
+of these "mappings", from tuple set to relation
+and back.
+-/
+
+theorem set_to_relation_inverse : 
 ∀ s : set (β × β),
   relation_to_set_of_tuples
     (set_of_tuples_to_relation s) 
@@ -1073,19 +1080,28 @@ equality holds, and we are done.
 -/
 end
 
-/- SULLIVAN STOPPED HERE -/
+/- Example: relation-set isomorphism -/
 
 def mod_12_equiv': set (ℕ × ℕ) :=
-  {tuple | tuple.1 % 12 = tuple.2 % 12}
+  { p : (ℕ × ℕ) | p.1 % 12 = p.2 % 12 }
 
 /-
-This won't work:
+This won't work. Return type is set
+of nat-nat pairs, while function is
+trying to return a relation expressed
+as a predicate on pairs of nats.
+
 def mod_12_equiv'': set (ℕ × ℕ) :=
-  λ x y, x % 12 = y % 12
+  λ x y : ℕ, x % 12 = y % 12
 -/
 
---#reduce ∃(n m: ℕ), (n, m) ∈ mod_12_equiv'
 
+/-
+Here we prove the equivalence of the two
+representations. Given a set of pairs, you
+can derive the relation; given the latter,
+you can derive the former.
+-/
 example: 
   ∀(n m: ℕ), 
     mod_12_equiv n m ↔ (n, m) ∈ mod_12_equiv' 
@@ -1094,20 +1110,25 @@ begin
   assume n m,
   apply iff.intro,
 
+    -- forward
     unfold mod_12_equiv,
     assume pf_mod_12_equiv,
     unfold mod_12_equiv',
     change n % 12 = m % 12,
     assumption,
 
+    -- backward
     unfold mod_12_equiv',
     assume pf_mod_12_equiv',
     unfold mod_12_equiv,
     change n % 12 = m % 12 at pf_mod_12_equiv',
     assumption,
-
 end
 
+
+/-
+Another view of transitive closure
+-/
 
 /-
 Let us define a relation R as R1
@@ -1175,7 +1196,8 @@ def is_one_or_two_less_than(x, y: ℕ): Prop :=
 Transitive closure. 
 
 The transitive closure of a relation, R, 
-is the union of R and all of its successor relations.
+can now also be understood as the union 
+of R and all of its successor relations.
 -/
 
 end relation_2102_sec
