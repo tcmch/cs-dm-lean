@@ -118,8 +118,18 @@ namespace function_set_exercise
   def fn2(n: ℕ)(m: ℕ) :=
     n / m
 
+  #reduce 2 / 0
+
+  #reduce fn2 2 0
+
   def fn3(n: ℕ)(m: {a: ℕ // a ≠ 0}) :=
     n / m
+
+--  #reduce fn3 2 0
+
+  variables n d : ℕ
+
+--  #check fn3 n d
 
 end function_set_exercise
 
@@ -140,9 +150,19 @@ namespace function_set_solution
   def set1: set (ℕ × ℕ) :=
     {tuple | tuple.2 = tuple.1 + 1}
 
+  def set1': set (ℕ × ℕ) :=
+    {tuple | tuple.2 = fn1 tuple.1}
+
+  example: set1 = set1' := rfl
+
   def my_tuple := (1, 2, 3)
   #check my_tuple
   #reduce my_tuple.2
+
+  def my_tuple' := ((1, 2), 3)
+  #check my_tuple'
+  #reduce my_tuple'.1
+  #reduce my_tuple'.2
 
   def set2: set (ℕ × ℕ × ℕ) :=
     {tuple | tuple.2.2 = tuple.1 / tuple.2.1}
@@ -195,5 +215,13 @@ namespace function_set_solution2
                  fn3 tuple.1 tuple.2.1}
 
   example: set3 = set3' := rfl
+
+  def tuple3 := (1, 2, 3, 4)
+  #reduce tuple3.1
+  #reduce tuple3.2
+  #reduce tuple3.2.1
+  #reduce tuple3.2.2
+  #reduce tuple3.2.2.1
+  #reduce tuple3.2.2.2
 
 end function_set_solution2
