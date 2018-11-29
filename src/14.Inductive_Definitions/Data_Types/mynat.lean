@@ -146,14 +146,59 @@ begin
     -- inductive case
     simp [add_mynat],
     assumption,
-    
 end
 
 /-
+Proof by induction is proof by
+case analysis on the *constructors*
+for values of a given type. If we 
+show that some predicate involving
+a natural number, n, is true no matter 
+what *constructor* was used to "build"
+n, then we've' shown the predicate to
+be true for *all* (∀) values of that 
+type.
+
+Let's think about the two
+constructors for values of type
+mynat. First, there is the zero 
+constructor.  That's the "base 
+case". Second, there's the succ
+constructor. From a value, n, 
+is constructs a value succ n.
+
+Now if we prove the following two
+cases, we're done:
+
+(1) the predicate in question is
+true when n is zero
+
+(2) if the predicate is true for
+n, then it is true for succ n.
+
+The reason we're done is that 
+there are no other possibilities
+for n.
+
+The set of values of an inductively 
+defined type is defined to be exactly 
+the set of values that can be built 
+by using the available constructors 
+any *finite* number of times, and
+that there are no other values of 
+the given type.
+-/
+
+/-
+
+-/
+
+/-
 EXERCISE: try this proof using
-cases instead of induction. Why
-does simple case analysis (on the
-two possible forms of m) fail?
+cases instead of induction. Cases
+also does case analysis on the
+constructors. Why does simple case 
+analysis fail?
 -/
 
 /-
