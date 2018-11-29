@@ -476,7 +476,8 @@ lemma square_single_valued_fun :
   single_valued_fun square :=
 begin
 unfold single_valued_fun,
-intros x y z ysqx zsqx,
+intros x y z,
+assume ysqx zsqx,
 rw ysqx, rw zsqx,
 end
 
@@ -1008,60 +1009,115 @@ exact ⟨id_nat_inj, id_nat_surj⟩
 end
 
 /-
-Functions and Relations as Sets of Pairs
+Relations (& thus Function) as Sets of Pairs
 -/
 
 /-
 We've already seen that we can represent
 a total function, f : β → β, as a relation,
-of type β → β → Prop, and that while we
-give up being able to compute we gain the
-ability to represent *partial* functions 
-in this form.
+of type β → β → Prop.
 
-What we show show briefly is that we can
-also convert back for betwen relations and
-sets of pairs. That means we can represent
-any function, whether total or not, as a
-set of pairs. This is, in fact, how most
-mathematicians think of functions, and how
-they are formalized in set theory. 
+We now show that if we're given a predicate
+r : α → β → Prop, as a representation of a 
+function, f : α → β (thus also satisfying the 
+single-value predicate on relations), we can 
+convert it to an equivalent representation 
+of f as a set of pairs.
 -/
 
 /-
-Our intuition is that a set of
-tuples can be converted into a 
-binary relation and vice versa.
-Let's see if we can write two
-functions to do such conversions.
-If we get the functions right,
-then we should be able to show
-that if you convert one way and
-then back, you get right back to
-where you started. Proving such
-a theorem about our functions 
-would be a very powerful test
-that we got them right -- without
-ever even having to run them!
+Let's recall what we know about pair types 
+and values and sets of pairs.
+
+A pair is a value of a product type.
+-/
+
+def v := (1, 3)
+#check v
+def w := (1, tt)
+#check w
+
+/-
+A set of pairs is thus a set of values of
+a product type. In the example, w, above,
+the type of w is ℕ × bool. In the example,
+v, it's ℕ × ℕ.
+
+The values of a product type, α × β, are 
+all of the possible pairs of values, p, 
+where p.fst is any value of type, α, and
+p.snd is any value of type, β.
+
+A product type contains *all* pairs of a
+given type. Often we want to represent a 
+relation, or a function, in particular, 
+as a much smaller set of such pairs. An
+example is our square_partial relation.
+It can be represented as the set of four
+pairs, { (0,0), (1,1), (2,4), (3,9) }.
+
+The type of this set is set (ℕ × ℕ). We
+can easily represent it in a line of code.  
+-/
+
+def square_partial_as_set : set (ℕ × ℕ) := 
+  { (0,0), (1,1), (2,4), (3, 9) }
+
+/-
+This is the kind of representation of a 
+function, or a relation more generally,
+that's preferred in everyday mathematics.
+In your future, such "set theoretic" ways
+of representing things are preferred.  
 -/
 
 /-
-A relation is just a predicate on
-two arguments. To convert a relation,
-here denoted by ≺, to a set, we use 
-set comprehension notation ro build 
-a the set of pairs that satisfy the 
-predicate defined by the relation. 
+Now we see that square_partial_as_set
+is just of the many possible values of
+type set ℕ × ℕ. It's just one of many
+subsets of the set of pairs of the
+product type ℕ × ℕ. Indeed, any relation 
+is representable as some set of pairs! So
+we represent a relation as a subset of
+the set of values of some product type. 
+Finally, the set of all subsets of a
+set of pairs ( values of some product 
+type) represents the set of all possible
+relations between two types of values. 
 -/
-def 
-relation_to_set_of_tuples: set (β × β) :=
+
+def power_set_of_product_type
+  { α β : Type } 
+  (s: set (α × β)):
+  set (set (α × β)) :=
+    { s : set (α × β) | true } 
+
+#check power_set_of_product_type square_partial_as_set
+
+/-
+Now we can think of, and represent, any 
+function, total or partial, as a set of 
+pairs, i.e., of values of product types.
+
+The following function converts, r, the
+relation shared throughout this file, to
+a corresponding set of pairs.
+
+This function is for the special cases 
+where α and β are the same type (here,
+β).
+-/
+
+def relation_to_set_of_tuples: set (β × β) :=
+    -- use set comprehension to define set
     { p : β × β | p.1 ≺ p.2 }
 
 /-
-Given a set of pairs, we can convert
-that to a relation, namely one that 
-is true for x and y iff (x, y) is in 
-the given set.
+We can also go back the other way,
+converting a represetation of a
+relation as a set of pairs, into 
+a representation of the relation 
+represeted as a predicate.
 -/
 def set_of_tuples_to_relation: 
   set (β × β) → (β → β → Prop) 
@@ -1071,15 +1127,13 @@ begin
   exact (λ x y, (x, y) ∈ s),
 end
 
-variable aSet : set (β × β)
-#check set_of_tuples_to_relation aSet
-#check relation_to_set_of_tuples(set_of_tuples_to_relation aSet)
-
-
 /-
-Now comes a major test of our formalization
-of these "mappings", from tuple set to relation
-and back.
+Indeed, these mappings are inverses.
+What we mean by this is that if we
+apply one function then the other we
+get back to where we started. The
+precise definition is given next.
+Here we prove it in one direction.
 -/
 
 theorem set_to_relation_inverse : 
@@ -1112,27 +1166,34 @@ equality holds, and we are done.
 -/
 end
 
-/- Example: relation-set isomorphism -/
+/-
+EXERCISE: Prove the theorem where
+the functions are applied in the
+other order.
+-/
 
+
+/- EXAMPLE: relation-set isomorphism -/
+
+/-
+We can represent a relation directly as 
+a set of pairs using set comprehension
+notation. Here we define the set of pairs
+of natural numbers where the first and
+second elements of each pair are congurent
+modulo 12.
+-/
 def mod_12_equiv': set (ℕ × ℕ) :=
   { p : (ℕ × ℕ) | p.1 % 12 = p.2 % 12 }
 
 /-
-This won't work. Return type is set
-of nat-nat pairs, while function is
-trying to return a relation expressed
-as a predicate on pairs of nats.
-
-def mod_12_equiv'': set (ℕ × ℕ) :=
-  λ x y : ℕ, x % 12 = y % 12
--/
-
-
-/-
-Here we prove the equivalence of the two
-representations. Given a set of pairs, you
-can derive the relation; given the latter,
-you can derive the former.
+Here we prove the equivalence of this new
+representation with the representation of
+this relation as a predicate, earlier in
+this file. Given a set of pairs, you can 
+derive the relation; and given the latter, 
+you can derive the former. We now prove
+formally that they're literally equivalent.
 -/
 example: 
   ∀(n m: ℕ), 
@@ -1157,9 +1218,62 @@ begin
     assumption,
 end
 
+/-
+
+CONCLUSION
+
+So there you have it. We have three ways to 
+represent functions: as lambda abstractions,
+predicates, and sets. Lambda abstractions are 
+used to represent total functions. Predicates
+and sets can represent both partial and total 
+functions. We can convert between equivalent 
+representations. Everyday mathematics prefers
+the set style representation (being rooted in
+set theory rather than type theory, in Lean)
+
+We've also studied properties of relations.
+These include the reflexive, symmetric, and
+transitive properties and the property of
+being an equivalence relation. We saw that 
+an equivalene relation partitions a set into
+a set of disjoint subsets, the equivalence
+classes of the equivalence relation.
+
+We then looked at the property of being 
+single valued, which is what is required
+for a relation also to be a function. 
+
+We then studied a number of properties of 
+functions, in particular: being injective, 
+surjective, and bijective (both injective
+and surjective).
+
+Finally, we spent time on the importance 
+of being able to represent and reason about 
+partial functions in CS. We can't directly
+represent them as lambda abstractions, so
+we represent them as "relations", by which
+in this context we mean predicates. We can
+also represent them as equivalent sets of
+pairs, but in Lean, we will prefer to stick
+with predicate representations of relations.
+
+The fundamental tradeoff is this: you can 
+compute with lambda abstractions, but you
+are limited to total functions; whereas, 
+with relations, you can represent partial
+functions, but you can't compute with a
+relation. Instead, you have to use logic
+to state and prove propositions about them. 
+-/
+
+/- EXTRA MATERIAL -/
 
 /-
-Another view of transitive closure
+Another view of transitive closure:
+Covered in Prof. Hocking's section,
+but not in Sullivan's.
 -/
 
 /-
@@ -1220,13 +1334,6 @@ Let's now define the composition operator for relations: ◦
 local infix `◦`:50 := composition
 
 /-
-def is_one_or_two_less_than(x, y: ℕ): Prop :=
-  x + 1 = y ∨ x + 2 = y
--/
-
-/-
-Transitive closure. 
-
 The transitive closure of a relation, R, 
 can now also be understood as the union 
 of R and all of its successor relations.
@@ -1235,3 +1342,4 @@ of R and all of its successor relations.
 end relation_2102_sec
 
 end relation_2102_ns
+
