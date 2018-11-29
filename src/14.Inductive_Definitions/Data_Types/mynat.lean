@@ -98,5 +98,66 @@ would you write it in regular math
 notation?
 -/
 
+/-
+We can easily prove that for all m : ℕ, 
+add_mynat 0 m = m, because the definition
+of add_mynat has a matching pattern (the
+first one), which explains exactly how to
+reduce a term with first argument zero.
+-/
+
+theorem zero_left_id: 
+    ∀ m : mynat, 
+        add_mynat mynat.zero m = m
+:=
+begin
+intro m,
+simp [add_mynat],
+end
+
+/-
+We just asked Lean to simplify the
+goal using the "simplication rules"
+specified by the two cases in the  
+definition of add_mynat. The result
+is m = m, which Lean takes care of
+with an automated application of rfl.
+-/
+
+/-
+Unfortunately, we don't have such 
+a simplification rule when the zero
+is on the right! For that we need a
+whole new proof strategy: proof by
+induction.
+-/
+
+theorem zero_right_id : 
+    ∀ m : mynat, 
+        add_mynat m mynat.zero = m
+:=
+begin
+    intro m,
+    induction m with m' h,
+
+    -- base case
+    simp [add_mynat],
+
+    -- inductive case
+    simp [add_mynat],
+    assumption,
+    
+end
+
+/-
+EXERCISE: try this proof using
+cases instead of induction. Why
+does simple case analysis (on the
+two possible forms of m) fail?
+-/
+
+/-
+EXERCISES: To Come Shortly
+-/
 
 end my_nat
