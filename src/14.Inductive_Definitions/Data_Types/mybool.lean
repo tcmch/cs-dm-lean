@@ -4,6 +4,8 @@ inductive mybool : Type
 | mytt : mybool
 | myff : mybool
 
+#check mybool.mytt
+
 /-
 We declare mybool to be an 
 inductively defined type:
@@ -57,6 +59,9 @@ def not_mybool (b: mybool) :=
     | mytt := myff
     | myff := mytt
     end
+
+#reduce not_mybool mytt
+#reduce not_mybool myff
 
 /-
 The match command does a kind of case
@@ -124,6 +129,8 @@ match b1, b2 with
     | myff, myff := myff
 end
 
+#reduce and_mybool' mytt myff
+
 /-
 The new concept here is that we can match
 on several arguments. 
@@ -153,6 +160,12 @@ the following Boolean operators:
 - implies, as implies_mybool
 -/
 
+def or_mybool (b1 b2: mybool) : mybool :=
+match b1, b2 with
+| myff, myff := myff
+| _, _ := mytt
+end
+
 /-
 EXERCISE: To test that you have given
 valid implementations, state and prove 
@@ -161,9 +174,6 @@ and b2, not_mybool (and_mybool b1 b2) =
 or_mybool (not_mybool b1) (not_mybool b2).
 -/
 
-def or_mybool (b1 b2 : mybool) : mybool :=
-sorry
-
 theorem demorgan1 : ∀ b1 b2 : mybool, 
     not_mybool 
         (and_mybool b1 b2) 
@@ -171,7 +181,25 @@ theorem demorgan1 : ∀ b1 b2 : mybool,
     or_mybool 
         (not_mybool b1) 
         (not_mybool b2) :=
+ begin
+ intros b1 b2,
+ cases b1,
+ cases b2,
+ apply rfl,
+ apply rfl,
+ cases b2,
+ apply rfl, 
+ apply rfl,
+ end
+
+ theorem demorgan2 : 
+    ∀ b1 b2 : mybool, not_mybool (or_mybool b1 b2) = and_mybool (not_mybool b1) (not_mybool b2) := 
+begin
+intros b1 b2,
+cases b1,
+cases b2,
 sorry
+end
 
 /-
 EXERCISE: State and prove the other 
