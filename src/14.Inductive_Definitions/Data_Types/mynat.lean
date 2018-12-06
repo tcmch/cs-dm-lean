@@ -1,8 +1,16 @@
-namespace my_nat
+namespace mynat
+
+
+/-
+Our own implementation of nat
+-/
 
 inductive mynat : Type 
 | zero : mynat
 | succ : mynat → mynat
+
+/-
+Convenient names for first few terms -/
 
 def zero := mynat.zero
 def one := mynat.succ zero
@@ -35,6 +43,17 @@ def pred (n : mynat) :=
     end
 
 #reduce pred three
+#reduce pred zero
+
+def pred' (n: mynat) :=
+  match n with
+  | mynat.succ n' := n'
+  | _ := zero
+  end
+
+example: pred = pred' := rfl
+
+
 /-
 There are two new and important
 concepts here. The first is a new
@@ -66,6 +85,8 @@ def add_mynat: mynat → mynat → mynat
 | (mynat.succ n') m :=
     mynat.succ (add_mynat n' m)
 
+#reduce add_mynat three two
+
 /-
 Syntax notes: use explicit function
 type syntax. Omit any :=. Define how
@@ -93,26 +114,29 @@ addition.
 (2) Implement exponentiation as iterated
 multiplication.
 
-(3) Take this pattern one ste further.
+(3) Take this pattern one step further.
 What function did you implement? How
 would you write it in regular math 
 notation?
 -/
+
 def mul_mynat: mynat → mynat → mynat
-| mynat.zero m := mynat.zero
-| (mynat.succ n') m :=
-    add_mynat m (mul_mynat n' m)
+| mynat.zero m := zero
+| (mynat.succ n') m := add_mynat m (mul_mynat n' m)
 
-#reduce mul_mynat one two
-#reduce mul_mynat two two
+#reduce mul_mynat three three 
 
-def exp_mynat: mynat → mynat → mynat
+
+def exp_mynat : mynat → mynat → mynat
 | n mynat.zero := one
-| n (mynat.succ m') :=
-    mul_mynat (exp_mynat n m') n
+| n (mynat.succ m') := mul_mynat n (exp_mynat n m')
 
-#reduce exp_mynat zero three
+#reduce exp_mynat three three
+
 #reduce exp_mynat two three
+
+--#reduce mul_mynat three two
+--#reduce mul_mynat three three
 
 /-
 We can easily prove that for all m : ℕ, 
@@ -128,6 +152,7 @@ theorem zero_left_id:
 :=
 begin
 intro m,
+--apply rfl,
 simp [add_mynat],
 end
 
@@ -154,14 +179,62 @@ theorem zero_right_id :
 :=
 begin
     intro m,
+
+    /-
+    cases m,
+    apply rfl,
+    -/
+
+
     induction m with m' h,
 
-    -- base case
-    simp [add_mynat],
+      -- base case
+      apply rfl,
+      --simp [add_mynat],
 
-    -- inductive case
+      -- inductive case
+      simp [add_mynat],
+      assumption,
+end
+
+lemma add_n_succ_m :
+∀ n m : mynat, 
+    add_mynat n (mynat.succ m) =
+    mynat.succ (add_mynat n m) :=
+begin
+intros n m,
+induction n with n' h,
+
+apply rfl,
+
+simp [add_mynat],
+assumption,
+end
+
+/-
+Property verification: our addition
+operation is commutative!
+-/
+example : 
+    ∀ m n : mynat, 
+    add_mynat m n = add_mynat n m :=
+begin
+    intros m n,
+    
+    -- by induction on m
+    induction m with m' h,
+
+    --base case: m = zero
     simp [add_mynat],
-    assumption,
+    rw zero_right_id,
+
+    -- inductive case: 
+    -- if true for m then true for succ m
+    simp [add_mynat],
+    rw add_n_succ_m,
+
+    -- rewrite using induction hypothesis!
+    rw h,
 end
 
 
@@ -179,13 +252,23 @@ end
 /-
 Proof by induction is proof by
 case analysis on the *constructors*
-for values of a given type. If we 
-show that some predicate involving
-a natural number, n, is true no matter 
-what *constructor* was used to "build"
+for values of a given type, with the
+huge added benefit of an induction 
+hypothesis. 
+
+So, as an example, if we show that 
+some predicate involving a natural 
+number, n, is true no matter what 
+*constructor* was used to "build"
 n, then we've' shown the predicate to
-be true for *all* (∀) values of that 
-type.
+be true for *all* (∀) values of n,
+because there are no n other than
+those that can be built by the given
+constructors. Proving a proposition
+is true for all constructors is thus
+tantamount to showing that it is
+true for all values, even if there
+are infinitely many.
 
 Let's think about the two
 constructors for values of type
@@ -193,7 +276,7 @@ mynat. First, there is the zero
 constructor.  That's the "base 
 case". Second, there's the succ
 constructor. From a value, n, 
-is constructs a value succ n.
+it constructs a value, succ n.
 
 Now if we prove the following two
 cases, we're done:
@@ -202,7 +285,7 @@ cases, we're done:
 true when n is zero
 
 (2) if the predicate is true for
-n, then it is true for succ n.
+any n, then it is true for succ n.
 
 The reason we're done is that 
 there are no other possibilities
@@ -217,9 +300,6 @@ that there are no other values of
 the given type.
 -/
 
-/-
-
--/
 
 /-
 EXERCISE: try this proof using
@@ -233,4 +313,4 @@ analysis fail?
 EXERCISES: To Come Shortly
 -/
 
-end my_nat
+end mynat
