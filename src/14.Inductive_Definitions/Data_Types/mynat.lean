@@ -34,6 +34,7 @@ def pred (n : mynat) :=
     | mynat.succ n' := n'
     end
 
+#reduce pred three
 /-
 There are two new and important
 concepts here. The first is a new
@@ -97,6 +98,21 @@ What function did you implement? How
 would you write it in regular math 
 notation?
 -/
+def mul_mynat: mynat → mynat → mynat
+| mynat.zero m := mynat.zero
+| (mynat.succ n') m :=
+    add_mynat m (mul_mynat n' m)
+
+#reduce mul_mynat one two
+#reduce mul_mynat two two
+
+def exp_mynat: mynat → mynat → mynat
+| n mynat.zero := one
+| n (mynat.succ m') :=
+    mul_mynat (exp_mynat n m') n
+
+#reduce exp_mynat zero three
+#reduce exp_mynat two three
 
 /-
 We can easily prove that for all m : ℕ, 
@@ -148,6 +164,18 @@ begin
     assumption,
 end
 
+
+example : 
+    ∀ m n : mynat,
+    add_mynat m n = add_mynat n m :=
+begin
+    intros m n,
+    induction m with m' h,
+    simp [zero_left_id],
+    simp [zero_right_id],
+    simp [add_mynat],
+    sorry
+end
 /-
 Proof by induction is proof by
 case analysis on the *constructors*

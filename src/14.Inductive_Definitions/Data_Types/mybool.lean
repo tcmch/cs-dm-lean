@@ -162,7 +162,10 @@ or_mybool (not_mybool b1) (not_mybool b2).
 -/
 
 def or_mybool (b1 b2 : mybool) : mybool :=
-sorry
+match b1, b2 with
+    | myff, myff := myff
+    | _, _ := mytt
+end
 
 theorem demorgan1 : ∀ b1 b2 : mybool, 
     not_mybool 
@@ -171,11 +174,38 @@ theorem demorgan1 : ∀ b1 b2 : mybool,
     or_mybool 
         (not_mybool b1) 
         (not_mybool b2) :=
-sorry
+begin
+    intros,
+    cases b1,
+    cases b2,
+    apply rfl,
+    apply rfl,
+    cases b2,
+    apply rfl,
+    apply rfl,
+end
 
 /-
 EXERCISE: State and prove the other 
 DeMorgan Law for Boolean algebra.
 -/
+
+theorem demorgan2 : ∀ b1 b2 : mybool, 
+    not_mybool 
+        (or_mybool b1 b2) 
+    =
+    and_mybool 
+        (not_mybool b1) 
+        (not_mybool b2) :=
+begin
+    intros,
+    cases b1,
+    cases b2,
+    apply rfl,
+    apply rfl,
+    cases b2,
+    apply rfl,
+    apply rfl,
+end
 
 end my_bool
