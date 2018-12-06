@@ -221,14 +221,37 @@ proper_subset
   { n | ∃ m, n = 2 * m + 1 } 
 :=
 begin
-_
-end
+unfold proper_subset,
+intro e,
 
+split,
 
-example : ∀ n : ℕ, n - n = 0:=
-begin
-intro n,
-have es := add_eq_of_eq_sub,
-apply eq.symm,
+-- subset
+assume h,
+cases h,
+show ∃ m, e = 2 * m + 1,
+apply exists.intro 1, assumption,
 
+cases h,
+apply exists.intro 0, assumption,
+
+cases h,
+
+/-
+have f : false, from h,
+contradiction,
+-/
+-- proper
+apply exists.intro 5,
+split,
+show ∃ m, 5 = 2 * m + 1, 
+apply exists.intro 2, apply rfl,
+
+intro h,
+change 5 = 3 ∨ 5 = 1 ∨ false at h,
+cases h,
+cases h,
+cases h,
+cases h,
+cases h,
 end

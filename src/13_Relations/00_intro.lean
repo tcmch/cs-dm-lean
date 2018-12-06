@@ -1343,3 +1343,6 @@ end relation_2102_sec
 
 end relation_2102_ns
 
+
+
+#print nat.less_than_or_equal

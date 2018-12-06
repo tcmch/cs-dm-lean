@@ -1,8 +1,16 @@
 namespace mynat
 
+
+/-
+Our own implementation of nat
+-/
+
 inductive mynat : Type 
 | zero : mynat
 | succ : mynat → mynat
+
+/-
+Convenient names for first few terms -/
 
 def zero := mynat.zero
 def one := mynat.succ zero
@@ -105,7 +113,18 @@ notation?
 
 def mul_mynat: mynat → mynat → mynat
 | mynat.zero m := zero
-| (mynat.succ n') m := add_mynat m _
+| (mynat.succ n') m := add_mynat m (mul_mynat n' m)
+
+#reduce mul_mynat three three 
+
+
+def exp_mynat : mynat → mynat → mynat
+| n mynat.zero := one
+| n (mynat.succ m') := mul_mynat n (exp_mynat n m')
+
+#reduce exp_mynat three three
+
+#reduce exp_mynat two three
 
 --#reduce mul_mynat three two
 --#reduce mul_mynat three three
@@ -124,7 +143,7 @@ theorem zero_left_id:
 :=
 begin
 intro m,
--- apply rfl,
+--apply rfl,
 simp [add_mynat],
 end
 
@@ -151,6 +170,13 @@ theorem zero_right_id :
 :=
 begin
     intro m,
+
+    /-
+    cases m,
+    apply rfl,
+    -/
+
+
     induction m with m' h,
 
     -- base case
@@ -163,9 +189,9 @@ begin
 end
 
 lemma add_n_succ_m :
-    ∀ n m : mynat, 
-        add_mynat n (mynat.succ m) =
-        mynat.succ (add_mynat n m) :=
+∀ n m : mynat, 
+    add_mynat n (mynat.succ m) =
+    mynat.succ (add_mynat n m) :=
 begin
 intros n m,
 induction n with n' h,
@@ -201,7 +227,6 @@ begin
 
     -- rewrite using induction hypothesis!
     rw h,
-    
 end
 
 /-
