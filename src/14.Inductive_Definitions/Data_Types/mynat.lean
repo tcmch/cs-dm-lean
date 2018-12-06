@@ -45,6 +45,15 @@ def pred (n : mynat) :=
 #reduce pred three
 #reduce pred zero
 
+def pred' (n: mynat) :=
+  match n with
+  | mynat.succ n' := n'
+  | _ := zero
+  end
+
+example: pred = pred' := rfl
+
+
 /-
 There are two new and important
 concepts here. The first is a new
@@ -179,13 +188,13 @@ begin
 
     induction m with m' h,
 
-    -- base case
-    apply rfl,
-    --simp [add_mynat],
+      -- base case
+      apply rfl,
+      --simp [add_mynat],
 
-    -- inductive case
-    simp [add_mynat],
-    assumption,
+      -- inductive case
+      simp [add_mynat],
+      assumption,
 end
 
 lemma add_n_succ_m :
@@ -201,7 +210,6 @@ apply rfl,
 simp [add_mynat],
 assumption,
 end
-
 
 /-
 Property verification: our addition

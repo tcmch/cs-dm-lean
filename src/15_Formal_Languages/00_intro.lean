@@ -8,7 +8,8 @@ symbols in a given logical expression.
 
 Consider for example this proposition
 ∀ p : Person, ∃ m: Person, motherOf p m. 
-We could have written it in a logically equivalent form: ∀ x : X, ∃ m : X, r p m.
+We could have written it in a logically
+equivalent form: ∀ x : X, ∃ m : X, r p m.
 The benefit of the first version is that
 it *suggests* an intended interpretation.
 We mean for p and m to represent people
@@ -20,7 +21,7 @@ We now drill down on the notions of the
 syntax and semantics of a formal language.
 The syntax of a language defines the set
 of valid expressions in the language. In
-predicate logic, for example, ∀ p: Perons,
+predicate logic, for example, ∀ p: Person,
 ∃ m : Person, motherOf p m is well formed.
 However, the expression, ∀ ∃ r, is not.
 
@@ -35,7 +36,8 @@ us how to evaluate the truth of any such
 expression.
 
 In this unit we begin by formalizing the
-syntax, interpretation, and semantics of propositional logic. Proposition logic is
+syntax, interpretation, and semantics of
+propositional logic. Proposition logic is
 a very simple logic, one that essentially
 mirrors (is "isomorphic to") the language
 of Boolean expressions.
@@ -148,13 +150,14 @@ def trueInterp (v : pVar) :=
 
 -- X = tt, Y=ff, Z=tt, _ = ff
 
-def anInterp (v : pVar) :=
-match v with
-| (pVar.mk 0) := tt     -- X
-| (pVar.mk 1) := ff     -- Y
-| (pVar.mk 2) := tt     -- Z
-| _ := ff               -- otherwise
-end
+def anInterp: pInterp :=
+λ(v: pVar),
+  match v with
+  | (pVar.mk 0) := tt     -- X
+  | (pVar.mk 1) := ff     -- Y
+  | (pVar.mk 2) := tt     -- Z
+  | _ := ff               -- otherwise
+  end
 
 -- Semantics
 
