@@ -78,6 +78,17 @@ def Z := pVar.mk 2
 def W := pVar.mk 3
 
 
+def pVar_eq (v1 v2 : pVar) : bool :=
+match v1, v2 with
+    (pVar.mk m), (pVar.mk n) := m = n
+end      
+
+#reduce pVar_eq X X
+#reduce pVar_eq X Y
+
+def Q := pVar.mk 0
+#reduce pVar_eq Q X
+
 /-
 Now we formalize a language of
 expressions in propositional logic. 
@@ -88,6 +99,7 @@ inductive pExp : Type
 | mk_var_pexp : pVar → pExp
 | mk_not_pexp : pExp → pExp
 | mk_and_pexp : pExp → pExp → pExp
+| mk_or_pexp  : pExp → pExp → pExp
 
 open pExp
 
@@ -105,16 +117,24 @@ def Z_exp := mk_var_pexp Z
 def not_X_exp := mk_not_pexp X_exp
 def and_X_Y_exp := mk_and_pexp X_exp Y_exp
 def and_X_Z_exp := mk_and_pexp X_exp Z_exp
+def or_X_Y_exp := mk_or_pexp X_exp Y_exp
 #reduce and_X_Z_exp
 
 -- syntactic sugar!
 
 notation e1 ∧ e2 :=  mk_and_pexp e1 e2
+notation e1 ∨ e2 := mk_or_pexp e1 e2
 notation ¬ e := mk_not_pexp e
 
 def not_X_exp' := ¬ X_exp
 def and_X_Y_exp' := X_exp ∧ Y_exp
 def and_X_Z_exp' := X_exp ∧ Z_exp
+def or_X_Y_exp' := X_exp ∨ Y_exp
+
+
+def tf := mk_and_pexp (mk_lit_pexp tt) (mk_lit_pexp ff)
+def nt := mk_not_pexp (mk_lit_pexp tt)
+def nxy := mk_not_pexp (mk_and_pexp X_exp Y_exp)
 
 
 -- Semantics
@@ -192,6 +212,8 @@ def pEval : pExp → pInterp → bool
 -- how to evaluate an "and" expression
 | (mk_and_pexp e1 e2) i := 
     band (pEval e1 i) (pEval e2 i)
+| (mk_or_pexp e1 e2) i :=
+    bor (pEval e1 i) (pEval e2 i)
 
 /-
 And now we have a formal language, with
@@ -283,6 +305,10 @@ def vars_in_exp_helper:
 | (mk_not_pexp e) s := 
     s ∪ (vars_in_exp_helper e s)
 | (mk_and_pexp e1 e2) s := 
+    s ∪ 
+    (vars_in_exp_helper e1 s) ∪ 
+    (vars_in_exp_helper e2 s)
+| (mk_or_pexp e1 e2) s := 
     s ∪ 
     (vars_in_exp_helper e1 s) ∪ 
     (vars_in_exp_helper e2 s)
